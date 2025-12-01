@@ -47,15 +47,18 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    
+
     // Validate that folderId is provided - pages must be inside a folder
     if (!body.folderId) {
       return NextResponse.json(
-        { error: "A page cannot exist without a folder. Please create a folder first." },
+        {
+          error:
+            "A page cannot exist without a folder. Please create a folder first.",
+        },
         { status: 400 }
       );
     }
-    
+
     await dbConnect();
 
     const user = await User.findOne({ email: session.user.email });

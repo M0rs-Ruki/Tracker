@@ -103,7 +103,7 @@ export function Sidebar({
     name: string;
   } | null>(null);
   const [newName, setNewName] = useState("");
-  
+
   // Folder selection dialog for creating pages
   const [folderSelectDialogOpen, setFolderSelectDialogOpen] = useState(false);
 
@@ -136,7 +136,9 @@ export function Sidebar({
       // No folder specified - check if folders exist
       if (folders.length === 0) {
         // No folders exist - show alert
-        alert("A page cannot exist without a folder. Please create a folder first.");
+        alert(
+          "A page cannot exist without a folder. Please create a folder first."
+        );
         return;
       }
       // Open folder selection dialog
@@ -402,13 +404,17 @@ export function Sidebar({
       </Dialog>
 
       {/* Folder Selection Dialog for Creating Pages */}
-      <Dialog open={folderSelectDialogOpen} onOpenChange={setFolderSelectDialogOpen}>
+      <Dialog
+        open={folderSelectDialogOpen}
+        onOpenChange={setFolderSelectDialogOpen}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Select a Folder</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
-            Pages must be created inside a folder. Select where to create your new page:
+            Pages must be created inside a folder. Select where to create your
+            new page:
           </p>
           <div className="max-h-64 overflow-y-auto space-y-1">
             {folders.map((folder) => (
