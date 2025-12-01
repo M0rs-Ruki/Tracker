@@ -273,7 +273,9 @@ export function PageCanvas({ page }: PageCanvasProps) {
             <h3 className="font-semibold mb-2">Budget Overview</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div>
-                <p className="text-neutral-500 dark:text-neutral-400">Page Total</p>
+                <p className="text-neutral-500 dark:text-neutral-400">
+                  Page Total
+                </p>
                 <p className="font-medium">
                   {formatCurrency(pageTotal, currency)}
                 </p>
