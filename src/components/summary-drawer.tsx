@@ -145,9 +145,12 @@ export function SummaryDrawer() {
                   No daily summaries yet. Generate your first one!
                 </div>
               ) : (
-                dailySummaries.map((summary) => (
+                dailySummaries.map((summary, index) => (
                   <SummaryCard
-                    key={summary._id?.toString()}
+                    key={
+                      summary._id?.toString() ??
+                      `daily-${summary.date}-${index}`
+                    }
                     date={summary.date}
                     type="daily"
                     summary={summary.summary}
@@ -185,9 +188,12 @@ export function SummaryDrawer() {
                   No weekly summaries yet. Generate your first one!
                 </div>
               ) : (
-                weeklySummaries.map((summary) => (
+                weeklySummaries.map((summary, index) => (
                   <SummaryCard
-                    key={summary._id?.toString()}
+                    key={
+                      summary._id?.toString() ??
+                      `weekly-${summary.date}-${index}`
+                    }
                     date={summary.date}
                     type="weekly"
                     summary={summary.summary}

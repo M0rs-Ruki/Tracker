@@ -52,6 +52,25 @@ import { CSS } from "@dnd-kit/utilities";
 import { IPage, IDay, IEntry } from "@/models/Page";
 import { exportApi } from "@/lib/api";
 
+// Predefined categories for quick selection
+const PREDEFINED_CATEGORIES = [
+  "Food",
+  "Travel",
+  "Personal Care",
+  "Groceries",
+  "Transport",
+  "Shopping",
+  "Entertainment",
+  "Health",
+  "Bills",
+  "Internet",
+  "Rent",
+  "Subscription",
+  "Education",
+  "Work",
+  "Other",
+];
+
 interface PageCanvasProps {
   page: IPage;
 }
@@ -75,8 +94,14 @@ export function PageCanvas({ page }: PageCanvasProps) {
     tags: "",
   });
   const [isExporting, setIsExporting] = useState(false);
+  const [showCategorySuggestions, setShowCategorySuggestions] = useState(false);
 
   const currency = user?.settings?.currency || "₹";
+
+  // Filter categories based on input
+  const filteredCategories = PREDEFINED_CATEGORIES.filter((cat) =>
+    cat.toLowerCase().includes(entryForm.category.toLowerCase())
+  );
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -275,47 +300,72 @@ export function PageCanvas({ page }: PageCanvasProps) {
             <h3 className="font-semibold mb-2 text-sm md:text-base">
               Budget Overview
             </h3>
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4 text-xs md:text-sm">
-              <div>
-                <p className="text-neutral-500 dark:text-neutral-400">
-                  Page Total
-                </p>
-                <p className="font-medium">
-                  {formatCurrency(pageTotal, currency)}
-                </p>
-              </div>
-              <div>
-                <p className="text-neutral-500 dark:text-neutral-400">
-                  Monthly Budget
-                </p>
-                <p className="font-medium text-black dark:text-white">
-                  {formatCurrency(user.settings.monthlyBudget, currency)}
-                </p>
-              </div>
-              <div>
-                <p className="text-neutral-500 dark:text-neutral-400">
-                  Weekly Budget
-                </p>
-                <p className="font-medium text-black dark:text-white">
-                  {formatCurrency(user.settings.monthlyBudget / 4, currency)}
-                </p>
-              </div>
-              <div>
-                <p className="text-neutral-500 dark:text-neutral-400">Status</p>
-                <p
-                  className={cn(
-                    "font-medium",
-                    pageTotal > user.settings.monthlyBudget / 4
-                      ? "text-black dark:text-white"
-                      : "text-black dark:text-white"
-                  )}
-                >
-                  {pageTotal > user.settings.monthlyBudget / 4
-                    ? "⚠️ Over Budget"
-                    : "✓ On Track"}
-                </p>
-              </div>
-            </div>
+            {(() => {
+              // Calculate fixed expenses total
+              const fixedExpensesTotal = (
+                user.settings.fixedExpenses || []
+              ).reduce((sum, expense) => sum + (expense.amount || 0), 0);
+              // Real budget = Monthly Budget - Fixed Expenses
+              const realBudgetMonthly =
+                user.settings.monthlyBudget - fixedExpensesTotal;
+              // Weekly budget based on real budget
+              const weeklyBudget = realBudgetMonthly / 4;
+              // Status check against weekly budget
+              const isOverBudget = pageTotal > weeklyBudget;
+
+              return (
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6 md:gap-4 text-xs md:text-sm">
+                  <div>
+                    <p className="text-neutral-500 dark:text-neutral-400">
+                      Page Total
+                    </p>
+                    <p className="font-medium text-black dark:text-white">
+                      {formatCurrency(pageTotal, currency)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-neutral-500 dark:text-neutral-400">
+                      Monthly Budget
+                    </p>
+                    <p className="font-medium text-black dark:text-white">
+                      {formatCurrency(user.settings.monthlyBudget, currency)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-neutral-500 dark:text-neutral-400">
+                      Fixed Expenses
+                    </p>
+                    <p className="font-medium text-black dark:text-white">
+                      {formatCurrency(fixedExpensesTotal, currency)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-neutral-500 dark:text-neutral-400">
+                      Real Monthly Budget
+                    </p>
+                    <p className="font-medium text-black dark:text-white">
+                      {formatCurrency(realBudgetMonthly, currency)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-neutral-500 dark:text-neutral-400">
+                      Weekly Budget
+                    </p>
+                    <p className="font-medium text-black dark:text-white">
+                      {formatCurrency(weeklyBudget, currency)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-neutral-500 dark:text-neutral-400">
+                      Status
+                    </p>
+                    <p className="font-medium text-black dark:text-white">
+                      {isOverBudget ? "⚠️ Over Budget" : "✓ On Track"}
+                    </p>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
       </div>
@@ -364,15 +414,40 @@ export function PageCanvas({ page }: PageCanvasProps) {
                 rows={2}
               />
             </div>
-            <div>
+            <div className="relative">
               <label className="text-sm font-medium">Category</label>
               <Input
                 value={entryForm.category}
-                onChange={(e) =>
-                  setEntryForm({ ...entryForm, category: e.target.value })
-                }
+                onChange={(e) => {
+                  setEntryForm({ ...entryForm, category: e.target.value });
+                  setShowCategorySuggestions(true);
+                }}
+                onFocus={() => setShowCategorySuggestions(true)}
+                onBlur={() => {
+                  // Delay to allow click on suggestion
+                  setTimeout(() => setShowCategorySuggestions(false), 150);
+                }}
                 placeholder="e.g., Food, Transport"
+                autoComplete="off"
               />
+              {/* Category Suggestions Dropdown */}
+              {showCategorySuggestions && filteredCategories.length > 0 && (
+                <div className="absolute z-50 w-full mt-1 max-h-48 overflow-y-auto rounded-md border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black shadow-lg">
+                  {filteredCategories.map((category) => (
+                    <div
+                      key={category}
+                      className="px-3 py-2 text-sm cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-900 text-black dark:text-white"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setEntryForm({ ...entryForm, category });
+                        setShowCategorySuggestions(false);
+                      }}
+                    >
+                      {category}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <div>
               <label className="text-sm font-medium">
