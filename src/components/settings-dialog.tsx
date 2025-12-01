@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useStore } from "@/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,8 +48,18 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
 
   const [newExpense, setNewExpense] = useState({ title: "", amount: "" });
 
+  // Track if user data has been loaded into form (by user email to handle user changes)
+  const initializedForUser = useRef<string | null>(null);
+
+  // Use a ref to track the latest formData to avoid stale closures
+  const formDataRef = useRef(formData);
   useEffect(() => {
-    if (user) {
+    formDataRef.current = formData;
+  }, [formData]);
+
+  // Initialize form data when dialog opens and user is available
+  useEffect(() => {
+    if (open && user && initializedForUser.current !== user.email) {
       setFormData({
         name: user.name || "",
         monthlyBudget: user.settings?.monthlyBudget?.toString() || "",
@@ -57,78 +67,125 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
         fixedExpenses: user.settings?.fixedExpenses || [],
         preferredAIProvider: user.settings?.preferredAIProvider || "openai",
       });
+      initializedForUser.current = user.email || null;
     }
-  }, [user]);
+  }, [open, user]);
+
+  // Reset when dialog closes so it re-initializes next time
+  useEffect(() => {
+    if (!open) {
+      initializedForUser.current = null;
+    }
+  }, [open]);
 
   const addFixedExpense = async () => {
-    if (newExpense.title && newExpense.amount) {
-      const updatedExpenses = [
-        ...formData.fixedExpenses,
-        { title: newExpense.title, amount: parseFloat(newExpense.amount) },
-      ];
+    console.log("=== ADD CLICKED ===");
+    console.log("newExpense:", newExpense);
+    console.log(
+      "formDataRef.current.fixedExpenses:",
+      formDataRef.current.fixedExpenses
+    );
 
-      // Update local state immediately
-      setFormData({
-        ...formData,
-        fixedExpenses: updatedExpenses,
+    if (!newExpense.title.trim() || !newExpense.amount.trim()) {
+      console.log("Validation failed - title or amount empty");
+      return;
+    }
+
+    const newExp = {
+      title: newExpense.title.trim(),
+      amount: parseFloat(newExpense.amount),
+    };
+    console.log("New expense object:", newExp);
+
+    // Get current expenses from ref (most up-to-date value)
+    const currentExpenses = formDataRef.current.fixedExpenses;
+    const updatedExpenses = [...currentExpenses, newExp];
+    console.log("Updated expenses array:", updatedExpenses);
+
+    // Update local state immediately
+    setFormData((prev) => ({ ...prev, fixedExpenses: updatedExpenses }));
+    setNewExpense({ title: "", amount: "" });
+
+    // Save to database
+    try {
+      const payload = {
+        settings: {
+          monthlyBudget: parseFloat(formDataRef.current.monthlyBudget) || 0,
+          currency: formDataRef.current.currency,
+          fixedExpenses: updatedExpenses,
+          preferredAIProvider: formDataRef.current.preferredAIProvider,
+        },
+      };
+      console.log("Sending payload:", JSON.stringify(payload, null, 2));
+
+      const response = await fetch("/api/user", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
-      setNewExpense({ title: "", amount: "" });
 
-      // Also save to database immediately
-      try {
-        await updateUser({
-          settings: {
-            monthlyBudget: parseFloat(formData.monthlyBudget) || 0,
-            currency: formData.currency,
-            fixedExpenses: updatedExpenses,
-            preferredAIProvider: formData.preferredAIProvider,
-          },
-        });
-        await fetchUser();
-      } catch (error) {
-        console.error("Error saving expense:", error);
-      }
+      const data = await response.json();
+      console.log("API response:", data);
+      if (data.error) throw new Error(data.error);
+      console.log("=== ADD SUCCESS ===");
+    } catch (error) {
+      console.error("Error saving expense:", error);
+      // Revert on error
+      setFormData((prev) => ({ ...prev, fixedExpenses: currentExpenses }));
     }
   };
 
   const removeFixedExpense = async (index: number) => {
-    const updatedExpenses = formData.fixedExpenses.filter(
-      (_, i) => i !== index
-    );
+    // Get current expenses from ref (most up-to-date value)
+    const currentExpenses = formDataRef.current.fixedExpenses;
+    const updatedExpenses = currentExpenses.filter((_, i) => i !== index);
 
-    setFormData({
-      ...formData,
-      fixedExpenses: updatedExpenses,
-    });
+    // Update local state immediately
+    setFormData((prev) => ({ ...prev, fixedExpenses: updatedExpenses }));
 
-    // Also save to database immediately
+    // Save to database
     try {
-      await updateUser({
+      const payload = {
         settings: {
-          monthlyBudget: parseFloat(formData.monthlyBudget) || 0,
-          currency: formData.currency,
+          monthlyBudget: parseFloat(formDataRef.current.monthlyBudget) || 0,
+          currency: formDataRef.current.currency,
           fixedExpenses: updatedExpenses,
-          preferredAIProvider: formData.preferredAIProvider,
+          preferredAIProvider: formDataRef.current.preferredAIProvider,
         },
+      };
+
+      const response = await fetch("/api/user", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
-      await fetchUser();
+
+      const data = await response.json();
+      if (data.error) throw new Error(data.error);
     } catch (error) {
       console.error("Error removing expense:", error);
+      // Revert on error
+      setFormData((prev) => ({ ...prev, fixedExpenses: currentExpenses }));
     }
   };
 
   const handleSaveGeneral = async () => {
     setIsSaving(true);
     try {
-      await updateUser({
-        name: formData.name,
+      // Use ref to get the latest formData to avoid stale state
+      const currentFormData = formDataRef.current;
+
+      const payload = {
+        name: currentFormData.name,
         settings: {
-          monthlyBudget: parseFloat(formData.monthlyBudget) || 0,
-          currency: formData.currency,
-          fixedExpenses: formData.fixedExpenses,
-          preferredAIProvider: formData.preferredAIProvider,
+          monthlyBudget: parseFloat(currentFormData.monthlyBudget) || 0,
+          currency: currentFormData.currency,
+          fixedExpenses: currentFormData.fixedExpenses,
+          preferredAIProvider: currentFormData.preferredAIProvider,
         },
-      });
+      };
+
+      await updateUser(payload);
       await fetchUser();
     } catch (error) {
       console.error("Error saving settings:", error);
@@ -165,7 +222,10 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent
+        className="max-w-lg max-h-[90vh] overflow-y-auto"
+        aria-describedby={undefined}
+      >
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
         </DialogHeader>
@@ -262,20 +322,18 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               <div className="flex gap-2 mt-2">
                 <Input
                   value={newExpense.title}
-                  onChange={(e) => {
-                    console.log("Title changed:", e.target.value);
-                    setNewExpense({ ...newExpense, title: e.target.value });
-                  }}
+                  onChange={(e) =>
+                    setNewExpense({ ...newExpense, title: e.target.value })
+                  }
                   placeholder="Expense name"
                   className="flex-1"
                 />
                 <Input
                   type="number"
                   value={newExpense.amount}
-                  onChange={(e) => {
-                    console.log("Amount changed:", e.target.value);
-                    setNewExpense({ ...newExpense, amount: e.target.value });
-                  }}
+                  onChange={(e) =>
+                    setNewExpense({ ...newExpense, amount: e.target.value })
+                  }
                   placeholder="Amount"
                   className="w-28"
                 />
@@ -283,11 +341,10 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
                   type="button"
                   variant="outline"
                   size="icon"
-                  onClick={() => {
-                    console.log("Add button clicked with:", newExpense);
-                    addFixedExpense();
-                  }}
-                  disabled={!newExpense.title || !newExpense.amount}
+                  disabled={
+                    !newExpense.title.trim() || !newExpense.amount.trim()
+                  }
+                  onClick={addFixedExpense}
                 >
                   <Plus className="h-4 w-4" />
                 </Button>

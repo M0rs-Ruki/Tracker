@@ -41,6 +41,10 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
+    console.log("=== PATCH /api/user ===");
+    console.log("Body received:", JSON.stringify(body, null, 2));
+    console.log("fixedExpenses in body:", body.settings?.fixedExpenses);
+
     await dbConnect();
 
     // First get the current user to merge settings
@@ -57,20 +61,26 @@ export async function PATCH(request: NextRequest) {
     if (body.settings) {
       updateData.settings = {
         monthlyBudget:
-          body.settings.monthlyBudget ??
-          currentUser.settings?.monthlyBudget ??
-          0,
+          body.settings.monthlyBudget !== undefined
+            ? body.settings.monthlyBudget
+            : currentUser.settings?.monthlyBudget ?? 0,
         currency:
-          body.settings.currency ?? currentUser.settings?.currency ?? "₹",
+          body.settings.currency !== undefined
+            ? body.settings.currency
+            : currentUser.settings?.currency ?? "₹",
         fixedExpenses:
-          body.settings.fixedExpenses ??
-          currentUser.settings?.fixedExpenses ??
-          [],
+          body.settings.fixedExpenses !== undefined
+            ? body.settings.fixedExpenses
+            : currentUser.settings?.fixedExpenses ?? [],
         preferredAIProvider:
-          body.settings.preferredAIProvider ??
-          currentUser.settings?.preferredAIProvider ??
-          "openai",
+          body.settings.preferredAIProvider !== undefined
+            ? body.settings.preferredAIProvider
+            : currentUser.settings?.preferredAIProvider ?? "openai",
       };
+      console.log(
+        "Settings to save:",
+        JSON.stringify(updateData.settings, null, 2)
+      );
     }
 
     if (body.onboardingCompleted !== undefined) {
