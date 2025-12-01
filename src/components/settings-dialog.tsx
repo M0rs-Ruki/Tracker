@@ -60,24 +60,61 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
     }
   }, [user]);
 
-  const addFixedExpense = () => {
+  const addFixedExpense = async () => {
     if (newExpense.title && newExpense.amount) {
+      const updatedExpenses = [
+        ...formData.fixedExpenses,
+        { title: newExpense.title, amount: parseFloat(newExpense.amount) },
+      ];
+
+      // Update local state immediately
       setFormData({
         ...formData,
-        fixedExpenses: [
-          ...formData.fixedExpenses,
-          { title: newExpense.title, amount: parseFloat(newExpense.amount) },
-        ],
+        fixedExpenses: updatedExpenses,
       });
       setNewExpense({ title: "", amount: "" });
+
+      // Also save to database immediately
+      try {
+        await updateUser({
+          settings: {
+            monthlyBudget: parseFloat(formData.monthlyBudget) || 0,
+            currency: formData.currency,
+            fixedExpenses: updatedExpenses,
+            preferredAIProvider: formData.preferredAIProvider,
+          },
+        });
+        await fetchUser();
+      } catch (error) {
+        console.error("Error saving expense:", error);
+      }
     }
   };
 
-  const removeFixedExpense = (index: number) => {
+  const removeFixedExpense = async (index: number) => {
+    const updatedExpenses = formData.fixedExpenses.filter(
+      (_, i) => i !== index
+    );
+
     setFormData({
       ...formData,
-      fixedExpenses: formData.fixedExpenses.filter((_, i) => i !== index),
+      fixedExpenses: updatedExpenses,
     });
+
+    // Also save to database immediately
+    try {
+      await updateUser({
+        settings: {
+          monthlyBudget: parseFloat(formData.monthlyBudget) || 0,
+          currency: formData.currency,
+          fixedExpenses: updatedExpenses,
+          preferredAIProvider: formData.preferredAIProvider,
+        },
+      });
+      await fetchUser();
+    } catch (error) {
+      console.error("Error removing expense:", error);
+    }
   };
 
   const handleSaveGeneral = async () => {
@@ -225,25 +262,31 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               <div className="flex gap-2 mt-2">
                 <Input
                   value={newExpense.title}
-                  onChange={(e) =>
-                    setNewExpense({ ...newExpense, title: e.target.value })
-                  }
+                  onChange={(e) => {
+                    console.log("Title changed:", e.target.value);
+                    setNewExpense({ ...newExpense, title: e.target.value });
+                  }}
                   placeholder="Expense name"
                   className="flex-1"
                 />
                 <Input
                   type="number"
                   value={newExpense.amount}
-                  onChange={(e) =>
-                    setNewExpense({ ...newExpense, amount: e.target.value })
-                  }
+                  onChange={(e) => {
+                    console.log("Amount changed:", e.target.value);
+                    setNewExpense({ ...newExpense, amount: e.target.value });
+                  }}
                   placeholder="Amount"
                   className="w-28"
                 />
                 <Button
+                  type="button"
                   variant="outline"
                   size="icon"
-                  onClick={addFixedExpense}
+                  onClick={() => {
+                    console.log("Add button clicked with:", newExpense);
+                    addFixedExpense();
+                  }}
                   disabled={!newExpense.title || !newExpense.amount}
                 >
                   <Plus className="h-4 w-4" />
@@ -251,28 +294,36 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               </div>
 
               <div className="space-y-2 mt-3 max-h-48 overflow-y-auto">
-                {formData.fixedExpenses.map((expense, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-3 rounded-lg bg-neutral-100 dark:bg-neutral-900"
-                  >
-                    <span>{expense.title}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">
-                        {formData.currency}
-                        {expense.amount}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        onClick={() => removeFixedExpense(index)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
+                {formData.fixedExpenses.length === 0 ? (
+                  <div className="text-center py-4 text-neutral-500 dark:text-neutral-400 text-sm">
+                    No fixed expenses added yet
                   </div>
-                ))}
+                ) : (
+                  formData.fixedExpenses.map((expense, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 rounded-lg bg-neutral-100 dark:bg-neutral-900"
+                    >
+                      <span className="text-black dark:text-white">
+                        {expense.title}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-black dark:text-white">
+                          {formData.currency}
+                          {expense.amount}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => removeFixedExpense(index)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
 

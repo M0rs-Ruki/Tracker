@@ -43,10 +43,36 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
     await dbConnect();
 
+    // First get the current user to merge settings
+    const currentUser = await User.findOne({ email: session.user.email });
+    if (!currentUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
     const updateData: Record<string, unknown> = {};
 
     if (body.name) updateData.name = body.name;
-    if (body.settings) updateData.settings = body.settings;
+
+    // Merge settings instead of replacing
+    if (body.settings) {
+      updateData.settings = {
+        monthlyBudget:
+          body.settings.monthlyBudget ??
+          currentUser.settings?.monthlyBudget ??
+          0,
+        currency:
+          body.settings.currency ?? currentUser.settings?.currency ?? "₹",
+        fixedExpenses:
+          body.settings.fixedExpenses ??
+          currentUser.settings?.fixedExpenses ??
+          [],
+        preferredAIProvider:
+          body.settings.preferredAIProvider ??
+          currentUser.settings?.preferredAIProvider ??
+          "openai",
+      };
+    }
+
     if (body.onboardingCompleted !== undefined) {
       updateData.onboardingCompleted = body.onboardingCompleted;
     }
@@ -59,7 +85,11 @@ export async function PATCH(request: NextRequest) {
           encryptedKeys[provider] = encrypt(key);
         }
       }
-      updateData.aiKeys = encryptedKeys;
+      // Merge with existing keys
+      updateData.aiKeys = {
+        ...currentUser.aiKeys,
+        ...encryptedKeys,
+      };
     }
 
     const user = await User.findOneAndUpdate(

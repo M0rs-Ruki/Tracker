@@ -61,6 +61,15 @@ export default function DashboardPage() {
 
   // Handle page selection and close sidebar on mobile
   const handlePageSelect = (pageId: string) => {
+    // Don't re-fetch if already selected
+    if (pageId === selectedPageId) {
+      // Just close sidebar on mobile
+      if (window.innerWidth < 768) {
+        setSidebarOpen(false);
+      }
+      return;
+    }
+
     setSelectedPageId(pageId);
     // Close sidebar on mobile after selecting a page
     if (window.innerWidth < 768) {
