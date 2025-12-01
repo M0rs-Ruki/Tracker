@@ -1,0 +1,1020 @@
+✅ Next.js (App Router)
+✅ MongoDB (NOT Prisma)
+✅ Axios for API calls (client → server)
+✅ Google Auth
+✅ User-added AI API key support (OpenAI, Google Gemini, Anthropic, etc.)
+✅ Responsive UI (mobile + desktop)
+✅ Notion-style drag/drop grid
+✅ Autosave
+✅ AI daily + weekly summaries
+✅ PDF export
+
+i have the client id so ya withe OAuth 2.20
+
+
+🎯 1. PRODUCT OVERVIEW — Finance Note Tracker (Notion Style)
+
+A clean, Notion-style finance tracker where users can:
+
+Create folders
+
+Create multiple pages inside those folders
+
+Each page contains 7 predefined daily sections
+
+Each day can have multiple finance entries (title + amount required)
+
+Data autosaves
+
+App calculates daily, weekly, monthly totals
+
+Users define their monthly budget & fixed costs during onboarding
+
+AI generates daily & weekly financial summaries
+
+User can plug in their own AI API key
+
+Only Google Login is used
+
+Data stored in MongoDB
+
+Export entire page → PDF
+
+🧩 2. FEATURE SET (DETAILED)
+A. Authentication
+
+Google OAuth
+
+Store user profile in MongoDB
+
+Store user’s AI API keys encrypted
+
+B. Sidebar
+
+Create folders
+
+Create pages
+
+Infinite nested folders
+
+Rename / delete / duplicate pages
+
+Drag/drop reordering (folders & pages)
+
+C. Page Structure
+
+When creating a new page:
+
+Page auto-generates 7 daily sections:
+
+Day 1
+
+Day 2
+
+Day 3
+
+…
+
+Day 7
+
+Inside each day, user can add entries:
+
+Each entry includes:
+Field	Required	Type
+Title	YES	string
+Amount	YES	number
+Description	NO	text
+Category	NO	string
+Tags	NO	array
+D. Autosave
+
+Every keystroke automatically saves using:
+
+debounce + PATCH /api/page/:id
+
+
+Axios is used for all client requests.
+
+E. Budget System
+
+During onboarding, user sets:
+
+Monthly Budget
+
+Fixed monthly expenses
+
+Optional recurring costs (Rent, Internet, Food, etc.)
+
+App automatically:
+
+Calculates total spent
+
+Calculates remaining budget
+
+Highlights danger zones
+
+Warns user when spending too fast
+
+F. AI System
+
+AI summaries generated automatically every midnight.
+
+User can select their AI provider:
+
+OpenAI
+
+Google Gemini
+
+Anthropic Claude
+
+OpenRouter
+
+HuggingFace
+
+User pastes their own API key.
+
+AI Summary includes:
+
+Total spending today / this week
+
+Most expensive day
+
+Pattern recognition
+
+Bad spending habits
+
+Savings suggestions
+
+Alerts (budget danger, over-spending)
+
+G. Export
+
+User can export a full page as:
+
+PDF summary
+
+H. Responsive UI
+
+Desktop → Notion styled
+
+Mobile → collapsible sidebar + tab view
+
+Touch-drag supported
+
+🏗 3. ARCHITECTURE
+Frontend
+
+Next.js App Router
+
+TailwindCSS + ShadCN UI
+
+Zustand for local UI state
+
+Axios for API calls
+
+Drag/drop using @dnd-kit
+
+Backend (Inside Next.js)
+
+Next.js Route Handlers (app/api/...)
+
+MongoDB using Mongoose
+
+Authentication via NextAuth Google Provider
+
+AI integrations via server routes
+
+🧬 4. DATABASE SCHEMA (MongoDB with Mongoose)
+User
+{
+  _id: ObjectId,
+  name: String,
+  email: String,
+  image: String,
+  aiKeys: {
+     openai: String,
+     google: String,
+     anthropic: String,
+     openrouter: String,
+  },
+  settings: {
+     monthlyBudget: Number,
+     fixedExpenses: [{
+        title: String,
+        amount: Number,
+     }]
+  }
+}
+
+Folder
+{
+  _id: ObjectId,
+  userId: ObjectId,
+  name: String,
+  parentFolderId: ObjectId | null,  // nested folders
+  createdAt: Date,
+  updatedAt: Date
+}
+
+Page
+{
+  _id: ObjectId,
+  userId: ObjectId,
+  folderId: ObjectId,
+  title: String,
+  days: [
+    {
+      dayIndex: Number,  // 1–7
+      entries: [
+        {
+          _id: ObjectId,
+          title: String,
+          amount: Number,
+          description: String,
+          category: String,
+          tags: [String],
+          createdAt: Date
+        }
+      ]
+    }
+  ],
+  createdAt: Date,
+  updatedAt: Date
+}
+
+AISummary
+{
+  _id: ObjectId,
+  userId: ObjectId,
+  date: String, // YYYY-MM-DD
+  type: "daily" | "weekly",
+  summary: String,
+  createdAt: Date
+}
+
+🚀 5. API ROUTES (Axios calls)
+Auth
+GET /api/auth/session
+
+Folder Routes
+POST /api/folder
+PATCH /api/folder/:id
+DELETE /api/folder/:id
+
+Page Routes
+POST /api/page
+GET /api/page/:id
+PATCH /api/page/:id   (autosave)
+DELETE /api/page/:id
+
+Entry Routes
+POST /api/page/:id/day/:dayIndex/entry
+PATCH /api/page/:id/day/:dayIndex/entry/:entryId
+DELETE /api/page/:id/day/:dayIndex/entry/:entryId
+
+AI Summary
+POST /api/ai/summary/daily
+POST /api/ai/summary/weekly
+
+🎨 6. UI / UX WIREFRAME (Text Version)
+Sidebar (left)
+---------------------------------
+  + New Folder
+  + New Page
+---------------------------------
+  Folder 1
+    - Page 1
+    - Page 2
+    - Folder 1.1
+       - Page A
+---------------------------------
+
+
+Drag and drop supported.
+
+Main Canvas
+PAGE TITLE
+
+[Day 1]
+   ☐ Fast Food - ₹230
+   ☐ Bus Ticket - ₹30
+   + Add Entry
+
+[Day 2]
+   (empty)
+   + Add Entry
+
+...
+[Day 7]
+
+
+Entries are draggable.
+
+Autosave indicator:
+
+Saving... ✓ Saved
+
+🤖 7. AI WORKFLOW
+✨ Daily Summary
+
+Triggered automatically every night at 11:59 PM:
+
+Calculate total spent today
+
+Compare to budget
+
+Analyze patterns
+
+Generate summary using user's AI provider
+
+✨ Weekly Summary
+
+Every Sunday night:
+
+Weekly totals
+
+Highest spending day
+
+Biggest category
+
+Suggested improvements
+
+📅 8. DEVELOPMENT ROADMAP (Step-by-Step)
+Phase 1 — Setup
+
+Next.js + Tailwind + ShadCN
+
+MongoDB + Mongoose
+
+Google Auth
+
+Phase 2 — Core Database
+
+User model
+
+Folder model
+
+Page model
+
+Phase 3 — Sidebar
+
+Folder + Page CRUD
+
+Nested folders
+
+Drag/drop
+
+Phase 4 — Page Canvas
+
+7-day structure
+
+Add/edit/delete entries
+
+Autosave
+
+Responsive layout
+
+Phase 5 — Budget System
+
+Onboarding wizard
+
+Monthly budget + fixed costs
+
+Phase 6 — AI Integration
+
+User AI key input
+
+Daily + Weekly summary routes
+
+Cron-like schedule using Vercel Cron Jobs
+
+Phase 7 — Export
+
+Create PDF export using server route
+
+Phase 8 — Polish
+
+Animations
+
+Optimized DB queries
+
+Caching
+
+Accessibility
+
+
+Build a full Notion-style finance tracking web app using Next.js (App Router), MongoDB, Axios, and Google Authentication. The app should behave like a minimal Notion workspace with pages, folders, and a 7-day finance canvas.
+
+Requirements (Very Important)
+✅ Core Tech
+
+Next.js (App Router)
+
+Tailwind + ShadCN UI
+
+MongoDB (Mongoose)
+
+Axios for all API calls
+
+NextAuth with Google Login
+
+Responsive (mobile + desktop)
+
+Sidebar (Folders + Pages)
+Features:
+
+Create folders
+
+Create pages
+
+Support infinite nested folders
+
+Rename, delete, and duplicate pages
+
+Drag & drop reorder (like Notion)
+
+Autosave order to MongoDB
+
+Display folder → pages tree
+
+Page Canvas (7-Day Layout)
+
+When user creates a new page:
+
+Automatically generate 7 day sections
+
+Each section = one day of the week
+
+Inside each day:
+
+User can add multiple finance entries
+
+Each entry includes:
+
+title (required)
+
+amount (required)
+
+description (optional)
+
+category (optional)
+
+tags (optional)
+
+Entries must be draggable
+
+Autosave on every edit (debounced)
+
+User Budget System
+
+On first login, show an onboarding form that asks:
+
+Name
+
+Monthly budget
+
+Fixed monthly expenses (rent, food, internet, etc.)
+
+Store this inside user.settings.
+
+The app should:
+
+Calculate daily spending
+
+Weekly spending
+
+Monthly spending
+
+Compare with user’s monthly budget
+
+Highlight overspending
+
+AI Integration (User-provided API key)
+
+Allow users to enter their own API keys for:
+
+OpenAI
+
+Google Gemini
+
+Anthropic Claude
+
+OpenRouter
+
+HuggingFace
+
+Create server routes:
+
+Daily AI Summary:
+
+Analyze spending for the last 24h
+
+Identify habits, patterns, suggestions
+
+Weekly AI Summary:
+
+Calculate totals
+
+Identify bad habits
+
+Give savings recommendations
+
+Store summaries in MongoDB.
+
+Export PDF
+
+Add export button to generate PDF of the full page, including all 7-day entries.
+
+Database Schema
+
+Use Mongoose. Include models:
+
+User
+
+name
+
+email
+
+image
+
+aiKeys (encrypted)
+
+monthlyBudget
+
+fixedExpenses[]
+
+Folder
+
+name
+
+userId
+
+parentFolderId
+
+Page
+
+title
+
+userId
+
+folderId
+
+days: [ { dayIndex, entries[] } ]
+
+AISummary
+
+daily / weekly
+
+summary text
+
+API Routes
+
+Use Next.js Route Handlers:
+
+/api/folder/*
+
+/api/page/*
+
+/api/entry/*
+
+/api/ai/*
+
+/api/export/pdf
+
+All requests from client → server must use Axios.
+
+UI/UX
+
+Layout inspired by Notion
+
+Clean, minimal, modern
+
+Drag/drop everywhere
+
+Beautiful animations
+
+Light + Dark mode
+
+Deliverables
+
+Please generate:
+
+Full project folder structure
+
+All API route files
+
+All Mongoose models
+
+All React components (Sidebar, PageCanvas, EntryCard, FolderTree, etc.)
+
+Autosave hook using Axios
+
+AI request helper (with switch for provider)
+
+Onboarding flow
+
+PDF export function
+
+Styling & layout
+
+Build a Notion-Style Finance Tracking Interface
+
+I want you to design and generate the complete UI for a Notion-style finance tracker.
+The UI must look and behave like Notion, with:
+
+A minimal clean interface
+
+A collapsible sidebar
+
+Pages and folders organized like a tree
+
+A canvas on the right side
+
+Editable blocks
+
+Drag-and-drop reordering
+
+Smooth animations
+
+Full responsiveness
+
+Focus on UI components, layout, interactions, and styling structure.
+
+🎯 1. Overall Layout Requirements
+Top-Level Layout
+
+A full-screen layout with:
+
+Left Sidebar (collapsible, fixed)
+
+Top Bar (only if needed)
+
+Main Canvas on the right
+
+Should behave exactly like Notion’s workspace layout.
+
+Styling Themes
+
+Minimal, clean, neutral colors
+
+Light + dark mode
+
+Soft shadows, rounded corners (md or lg)
+
+Smooth transitions for hover, focus, drag
+
+🎯 2. Sidebar UI (Notion-Style)
+Sidebar Sections
+
+A vertical left sidebar with:
+
+User profile at top
+
+“Add Folder” button
+
+“Add Page” button
+
+Tree structure with folders & pages
+
+Collapsible folders
+
+Indentation levels like Notion
+
+Drag & drop for:
+
+Reordering folders
+
+Moving pages inside folders
+
+Moving folders inside folders
+
+Folder UI Behavior
+
+Clicking the folder expands/collapses it
+
+Show a chevron icon that rotates on open/close
+
+Nested folders should indent 12–16px
+
+Hovering over a folder shows three-dot menu:
+
+Rename
+
+Duplicate
+
+Delete
+
+New Page
+
+New Folder
+
+Page UI Behavior
+
+Pages display as list items
+
+Show an icon (default: 📄)
+
+On hover → show small menu:
+
+Rename
+
+Duplicate
+
+Delete
+
+Sidebar Mobile Behavior
+
+For mobile screens, sidebar becomes:
+
+Hidden by default
+
+Slide-in drawer
+
+Triggered by hamburger button
+
+🎯 3. Page Canvas UI (7-Day Finance Grid)
+
+Each page contains a 7-day grid, structured like Notion page content.
+
+Grid Layout
+
+7 stacked vertical sections
+
+Each section has:
+
+Section Header (Day 1, Day 2, …)
+
+“+ Add Entry” button
+
+List of entries (draggable)
+
+Smooth separators between sections
+
+Section Header UI
+
+Title on left (ex: “Day 1”)
+
+A subtle dotted style like Notion headings
+
+Optional emoji icon
+
+Hover → show small menu:
+
+Add Entry
+
+Collapse section
+
+Clear day
+
+Collapsing uses smooth height animation
+
+🎯 4. Finance Entry Card UI
+
+Entries must look like simple, clean cards like Notion blocks.
+Each entry contains:
+
+Entry Elements
+
+Title (editable inline)
+
+Amount (editable inline)
+
+Optional description (expandable)
+
+Optional category
+
+Tags with rounded pill UI
+
+Timestamp on hover
+
+Entry Card Styling
+
+Rounded corners (md)
+
+Light border
+
+Soft hover highlight
+
+Drag handle on left, like Notion
+
+Icons for:
+
+Edit
+
+Delete
+
+Autosave status shows at top-right when active:
+Saving… → Saved ✓
+
+Drag & Drop
+
+Dragging an entry:
+
+Shows lifted card shadow
+
+Other entries shift in real-time
+
+You can move entries:
+
+Up/down inside the same day
+
+Into another day section
+
+🎯 5. Onboarding UI
+
+First-time users see a smooth onboarding modal:
+
+Screens:
+
+Welcome Screen
+
+Name Input
+
+Monthly Budget Input
+
+Fixed Expenses Setup
+
+Select AI Provider + Add API Key
+
+Finish
+
+Use:
+
+Fullscreen stepper
+
+Smooth transitions
+
+Clean forms
+
+Emoji or icon illustrations
+
+🎯 6. AI Summary UI
+Daily & Weekly Summary Cards
+
+Hide inside a right sidebar drawer
+
+Expandable panel
+
+Clean text-block formatting
+
+Icons:
+
+⚠ Over budget
+
+📊 Insights
+
+💡 Recommendation
+
+Smooth accordion animations
+
+🎯 7. PDF Export UI
+
+PDF Export Button:
+
+Show on top right of page
+
+Simple outline button:
+
+Export PDF
+
+
+On click → show small modal:
+
+Page summary preview
+
+Export button
+
+🎯 8. Responsiveness Requirements
+Desktop:
+
+Sidebar always visible
+
+Canvas centered with padding
+
+Drag works with mouse
+
+Tablet:
+
+Sidebar collapsible
+
+Canvas takes full screen width
+
+Mobile:
+
+Sidebar hidden → hamburger toggle
+
+Day sections collapse by default
+
+Entry cards full-width
+
+Tap to expand editor
+
+🎯 9. Visual Style Guidelines
+Colors
+
+Use neutral gray palette:
+
+gray-100, gray-200, gray-300, gray-700
+
+Primary accent in the blue range
+
+Border style: border-gray-200
+
+Shadows: shadow-sm, shadow-md
+
+Typography
+
+Use Inter font
+
+Size hierarchy:
+
+Sidebar items: text-sm
+
+Page section titles: text-lg font-semibold
+
+Entry titles: text-base
+
+Amount text: font-medium
+
+Spacing
+
+Consistent:
+
+px-4 py-2 for items
+
+gap-3 between entries
+
+🎯 10. Components You MUST Generate
+
+Generate UI code for:
+
+Root Layout
+
+Sidebar
+
+Canvas
+
+Responsive wrappers
+
+Sidebar Components
+
+FolderItem
+
+PageItem
+
+TreeList
+
+Create buttons
+
+Canvas Components
+
+DaySection
+
+EntryCard
+
+EntryEditor
+
+AddEntryButton
+
+Onboarding Components
+
+Multi-step modal
+
+Form components
+
+AI Summary UI
+
+SummaryDrawer
+
+SummaryCard
+
+PDF Export Components
+
+Modal
+
+Export button
+
+Helpers
+
+Drag & drop provider
+
+Autosave indicator
+
+🎯 Final Instruction
+
+Generate complete UI code, components, layout, and styles that match the Notion visual system but adapted for a finance tracker.
+Use:
+
+Next.js App Router
+
+TailwindCSS
+
+ShadCN UI components
+
+Heroicons or Lucide icons
+
+Smooth animations
+
+Full responsiveness
+
+Make the entire UI production-ready.

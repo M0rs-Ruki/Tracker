@@ -1,0 +1,50 @@
+/* ========================================
+   SIDEBAR CSS - Black/White/Grayscale Only
+======================================== */
+
+.sidebar {
+  background: var(--background);
+  border-right: 1px solid var(--border);
+}
+
+.sidebar-item {
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.sidebar-item:hover {
+  background: var(--hover);
+}
+
+.sidebar-item.active {
+  background: var(--active);
+}
+
+.sidebar-item-icon {
+  color: var(--text-secondary);
+}
+
+.sidebar-folder {
+  font-weight: 500;
+}
+
+.sidebar-page {
+  color: var(--text-primary);
+}
+
+.sidebar-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 8px 0;
+}
+
+.sidebar-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  padding: 8px 12px;
+}

@@ -1,26 +1,151 @@
 @import "tailwindcss";
 
+/* ========================================
+   GLOBAL CSS - Black/White/Grayscale Only
+   Notion-style minimal design
+======================================== */
+
 :root {
+  /* Theme Variables */
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #000000;
+  --background-secondary: #f5f5f5;
+  --background-tertiary: #eeeeee;
+  --border: rgba(0, 0, 0, 0.1);
+  --border-strong: rgba(0, 0, 0, 0.2);
+  --text-primary: #000000;
+  --text-secondary: #666666;
+  --text-muted: #999999;
+  --hover: rgba(0, 0, 0, 0.05);
+  --active: rgba(0, 0, 0, 0.1);
+
+  /* Grayscale palette */
+  --gray-50: #ffffff;
+  --gray-100: #f5f5f5;
+  --gray-200: #eeeeee;
+  --gray-300: #cccccc;
+  --gray-400: #999999;
+  --gray-500: #666666;
+  --gray-600: #333333;
+  --gray-700: #000000;
+}
+
+.dark {
+  --background: #000000;
+  --foreground: #ffffff;
+  --background-secondary: #111111;
+  --background-tertiary: #1a1a1a;
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.2);
+  --text-primary: #ffffff;
+  --text-secondary: #999999;
+  --text-muted: #666666;
+  --hover: rgba(255, 255, 255, 0.05);
+  --active: rgba(255, 255, 255, 0.1);
+
+  /* Inverted grayscale for dark mode */
+  --gray-50: #000000;
+  --gray-100: #111111;
+  --gray-200: #1a1a1a;
+  --gray-300: #333333;
+  --gray-400: #666666;
+  --gray-500: #999999;
+  --gray-600: #cccccc;
+  --gray-700: #ffffff;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Base Styles */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar - grayscale only */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gray-300);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-400);
+}
+
+/* Selection - grayscale */
+::selection {
+  background: var(--gray-200);
+  color: var(--foreground);
+}
+
+.dark ::selection {
+  background: var(--gray-300);
+  color: var(--foreground);
+}
+
+/* Focus styles - black/white only */
+:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+}
+
+/* Animations */
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+.animate-accordion-down {
+  animation: accordion-down 0.2s ease-out;
+}
+
+.animate-accordion-up {
+  animation: accordion-up 0.2s ease-out;
+}
+
+/* Notion-style typography */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* Minimal transitions */
+* {
+  transition-property: background-color, border-color, opacity;
+  transition-duration: 150ms;
+  transition-timing-function: ease;
 }

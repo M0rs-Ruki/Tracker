@@ -1,0 +1,71 @@
+/* ========================================
+   CANVAS CSS - Black/White/Grayscale Only
+======================================== */
+
+.canvas {
+  background: var(--background);
+  min-height: 100vh;
+}
+
+.canvas-header {
+  border-bottom: 1px solid var(--border);
+  padding: 16px 24px;
+}
+
+.canvas-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+  border: none;
+  background: transparent;
+  outline: none;
+}
+
+.canvas-title::placeholder {
+  color: var(--text-muted);
+}
+
+.day-column {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.day-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--background-secondary);
+}
+
+.day-content {
+  padding: 12px;
+  min-height: 200px;
+}
+
+.day-total {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--background-secondary);
+}
+
+.entry-add-button {
+  width: 100%;
+  padding: 8px;
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  color: var(--text-muted);
+  background: transparent;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.entry-add-button:hover {
+  border-color: var(--border-strong);
+  color: var(--text-secondary);
+  background: var(--hover);
+}

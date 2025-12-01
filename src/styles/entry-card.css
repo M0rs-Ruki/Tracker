@@ -1,0 +1,74 @@
+/* ========================================
+   ENTRY CARD CSS - Black/White/Grayscale Only
+======================================== */
+
+.entry-card {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.entry-card:hover {
+  border-color: var(--border-strong);
+  background: var(--hover);
+}
+
+.entry-card.dragging {
+  opacity: 0.5;
+  border-color: var(--foreground);
+}
+
+.entry-title {
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.entry-amount {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.entry-amount.expense {
+  color: var(--text-primary);
+}
+
+.entry-amount.income {
+  color: var(--text-primary);
+}
+
+.entry-description {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.entry-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.entry-tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  background: var(--background-secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-secondary);
+}
+
+.entry-type-indicator {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--foreground);
+  display: inline-block;
+  margin-right: 8px;
+}

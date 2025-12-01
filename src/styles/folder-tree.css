@@ -1,0 +1,99 @@
+/* ========================================
+   FOLDER TREE CSS - Black/White/Grayscale Only
+======================================== */
+
+.folder-tree {
+  padding: 8px;
+}
+
+.folder-tree-item {
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.folder-tree-item:hover {
+  background: var(--hover);
+}
+
+.folder-tree-item.selected {
+  background: var(--active);
+}
+
+.folder-tree-item.dragging {
+  opacity: 0.5;
+}
+
+.folder-tree-chevron {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.folder-tree-chevron:hover {
+  color: var(--text-primary);
+}
+
+.folder-tree-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.folder-tree-name {
+  flex: 1;
+  font-size: 14px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.folder-tree-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.folder-tree-item:hover .folder-tree-actions {
+  opacity: 1;
+}
+
+.folder-tree-action {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.folder-tree-action:hover {
+  background: var(--hover);
+  color: var(--text-primary);
+}
+
+.folder-tree-children {
+  padding-left: 20px;
+}
+
+.folder-tree-drop-indicator {
+  height: 2px;
+  background: var(--foreground);
+  border-radius: 1px;
+  margin: 2px 0;
+}

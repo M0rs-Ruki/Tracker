@@ -1,0 +1,193 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import dbConnect from "@/lib/mongodb";
+import User from "@/models/User";
+import Page from "@/models/Page";
+import jsPDF from "jspdf";
+
+// POST generate PDF for a page
+export async function POST(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { pageId } = body;
+
+    if (!pageId) {
+      return NextResponse.json({ error: "Page ID required" }, { status: 400 });
+    }
+
+    await dbConnect();
+    const user = await User.findOne({ email: session.user.email });
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const page = await Page.findOne({ _id: pageId, userId: user._id });
+    if (!page) {
+      return NextResponse.json({ error: "Page not found" }, { status: 404 });
+    }
+
+    // Create PDF
+    const doc = new jsPDF();
+    const currency = user.settings.currency || "₹";
+    let yPos = 20;
+    const lineHeight = 7;
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    // Title
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold");
+    doc.text(`${page.icon} ${page.title}`, 20, yPos);
+    yPos += lineHeight * 2;
+
+    // Date
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(128, 128, 128);
+    doc.text(`Generated: ${new Date().toLocaleDateString()}`, 20, yPos);
+    yPos += lineHeight * 2;
+
+    // Calculate totals
+    let pageTotal = 0;
+    for (const day of page.days) {
+      for (const entry of day.entries) {
+        pageTotal += entry.amount;
+      }
+    }
+
+    // Summary
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Total Spending: ${currency}${pageTotal.toFixed(2)}`, 20, yPos);
+    yPos += lineHeight;
+    doc.text(
+      `Monthly Budget: ${currency}${user.settings.monthlyBudget.toFixed(2)}`,
+      20,
+      yPos
+    );
+    yPos += lineHeight * 2;
+
+    // Separator
+    doc.setDrawColor(200, 200, 200);
+    doc.line(20, yPos, pageWidth - 20, yPos);
+    yPos += lineHeight;
+
+    // Days and entries
+    for (const day of page.days) {
+      // Check if we need a new page
+      if (yPos > 270) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      // Day header
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(51, 51, 51);
+      doc.text(`Day ${day.dayIndex}`, 20, yPos);
+      yPos += lineHeight;
+
+      // Day total
+      const dayTotal = day.entries.reduce((sum, e) => sum + e.amount, 0);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(100, 100, 100);
+      doc.text(`Total: ${currency}${dayTotal.toFixed(2)}`, 20, yPos);
+      yPos += lineHeight;
+
+      if (day.entries.length === 0) {
+        doc.setFontSize(10);
+        doc.setTextColor(150, 150, 150);
+        doc.text("No entries", 25, yPos);
+        yPos += lineHeight;
+      } else {
+        // Entries
+        for (const entry of day.entries) {
+          if (yPos > 270) {
+            doc.addPage();
+            yPos = 20;
+          }
+
+          doc.setFontSize(11);
+          doc.setFont("helvetica", "normal");
+          doc.setTextColor(0, 0, 0);
+          doc.text(`• ${entry.title}`, 25, yPos);
+
+          // Amount on the right
+          doc.setFont("helvetica", "bold");
+          const amountText = `${currency}${entry.amount.toFixed(2)}`;
+          const amountWidth = doc.getTextWidth(amountText);
+          doc.text(amountText, pageWidth - 20 - amountWidth, yPos);
+          yPos += lineHeight;
+
+          // Description and category
+          if (entry.description || entry.category) {
+            doc.setFontSize(9);
+            doc.setFont("helvetica", "italic");
+            doc.setTextColor(128, 128, 128);
+            const details = [
+              entry.category ? `[${entry.category}]` : "",
+              entry.description || "",
+            ]
+              .filter(Boolean)
+              .join(" - ");
+            if (details) {
+              doc.text(details, 30, yPos);
+              yPos += lineHeight;
+            }
+          }
+
+          // Tags
+          if (entry.tags && entry.tags.length > 0) {
+            doc.setFontSize(8);
+            doc.setTextColor(100, 100, 200);
+            doc.text(`Tags: ${entry.tags.join(", ")}`, 30, yPos);
+            yPos += lineHeight;
+          }
+        }
+      }
+
+      yPos += lineHeight / 2;
+
+      // Day separator
+      doc.setDrawColor(230, 230, 230);
+      doc.line(20, yPos, pageWidth - 20, yPos);
+      yPos += lineHeight;
+    }
+
+    // Footer
+    doc.setFontSize(8);
+    doc.setTextColor(150, 150, 150);
+    doc.text(
+      "Generated by Finance Tracker",
+      pageWidth / 2,
+      doc.internal.pageSize.getHeight() - 10,
+      { align: "center" }
+    );
+
+    // Generate PDF buffer
+    const pdfBuffer = doc.output("arraybuffer");
+
+    return new NextResponse(pdfBuffer, {
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename="${page.title.replace(
+          /[^a-z0-9]/gi,
+          "_"
+        )}_export.pdf"`,
+      },
+    });
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
