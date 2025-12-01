@@ -213,21 +213,21 @@ export function PageCanvas({ page }: PageCanvasProps) {
 
   return (
     <div className="flex-1 h-full overflow-y-auto bg-white dark:bg-black">
-      <div className="max-w-4xl mx-auto px-4 py-8 md:px-8">
+      <div className="max-w-4xl mx-auto px-3 py-4 md:px-8 md:py-8">
         {/* Header */}
-        <div className="flex items-start justify-between mb-8">
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6 md:mb-8">
           <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <span className="text-4xl">{page.icon}</span>
+            <div className="flex items-center gap-2 md:gap-3 mb-2">
+              <span className="text-2xl md:text-4xl">{page.icon}</span>
               <input
                 type="text"
                 value={title}
                 onChange={handleTitleChange}
-                className="text-3xl font-bold bg-transparent border-none outline-none w-full focus:ring-0 text-black dark:text-white placeholder:text-neutral-400"
+                className="text-xl md:text-3xl font-bold bg-transparent border-none outline-none w-full focus:ring-0 text-black dark:text-white placeholder:text-neutral-400"
                 placeholder="Untitled Page"
               />
             </div>
-            <div className="flex items-center gap-4 text-sm text-neutral-500 dark:text-neutral-400">
+            <div className="flex flex-wrap items-center gap-2 md:gap-4 text-xs md:text-sm text-neutral-500 dark:text-neutral-400">
               <span>
                 Total:{" "}
                 <strong className="text-black dark:text-white">
@@ -239,6 +239,8 @@ export function PageCanvas({ page }: PageCanvasProps) {
           </div>
           <Button
             variant="outline"
+            size="sm"
+            className="w-full md:w-auto"
             onClick={handleExportPdf}
             disabled={isExporting}
           >
@@ -269,9 +271,11 @@ export function PageCanvas({ page }: PageCanvasProps) {
 
         {/* Budget Summary */}
         {user?.settings?.monthlyBudget && (
-          <div className="mt-8 p-4 rounded-lg bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
-            <h3 className="font-semibold mb-2">Budget Overview</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div className="mt-6 md:mt-8 p-3 md:p-4 rounded-lg bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
+            <h3 className="font-semibold mb-2 text-sm md:text-base">
+              Budget Overview
+            </h3>
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4 text-xs md:text-sm">
               <div>
                 <p className="text-neutral-500 dark:text-neutral-400">
                   Page Total
@@ -430,45 +434,49 @@ function DaySection({
     <div className="border border-neutral-200 dark:border-neutral-800 rounded-lg overflow-hidden">
       {/* Day Header */}
       <div
-        className="flex items-center justify-between px-4 py-3 bg-neutral-50 dark:bg-neutral-900 cursor-pointer"
+        className="flex items-center justify-between px-3 py-2 md:px-4 md:py-3 bg-neutral-50 dark:bg-neutral-900 cursor-pointer"
         onClick={onToggle}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 md:gap-2 min-w-0">
           {isExpanded ? (
-            <ChevronDown className="h-4 w-4 text-neutral-500" />
+            <ChevronDown className="h-4 w-4 text-neutral-500 shrink-0" />
           ) : (
-            <ChevronRight className="h-4 w-4 text-neutral-500" />
+            <ChevronRight className="h-4 w-4 text-neutral-500 shrink-0" />
           )}
-          <h3 className="font-semibold text-black dark:text-white">
+          <h3 className="font-semibold text-sm md:text-base text-black dark:text-white truncate">
             {getDayName(day.dayIndex)}
           </h3>
-          <span className="text-sm text-neutral-500 dark:text-neutral-400">
+          <span className="text-xs md:text-sm text-neutral-500 dark:text-neutral-400 hidden sm:inline">
             ({day.entries.length} entries)
           </span>
+          <span className="text-xs text-neutral-500 dark:text-neutral-400 sm:hidden">
+            ({day.entries.length})
+          </span>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="font-medium text-black dark:text-white">
+        <div className="flex items-center gap-2 md:gap-3">
+          <span className="font-medium text-sm md:text-base text-black dark:text-white">
             {formatCurrency(dayTotal, currency)}
           </span>
           <Button
             variant="ghost"
             size="sm"
+            className="h-7 px-2 md:h-8 md:px-3"
             onClick={(e) => {
               e.stopPropagation();
               onAddEntry();
             }}
           >
-            <Plus className="h-4 w-4 mr-1" />
-            Add
+            <Plus className="h-4 w-4 md:mr-1" />
+            <span className="hidden md:inline">Add</span>
           </Button>
         </div>
       </div>
 
       {/* Entries */}
       {isExpanded && (
-        <div className="p-4 space-y-2">
+        <div className="p-2 md:p-4 space-y-2">
           {day.entries.length === 0 ? (
-            <div className="text-center py-8 text-neutral-500 dark:text-neutral-400 text-sm">
+            <div className="text-center py-6 md:py-8 text-neutral-500 dark:text-neutral-400 text-xs md:text-sm">
               No entries yet. Click "Add" to create one.
             </div>
           ) : (
@@ -528,30 +536,30 @@ function EntryCard({ entry, currency, onEdit, onDelete }: EntryCardProps) {
       style={style}
       {...attributes}
       className={cn(
-        "group flex items-center gap-3 p-3 rounded-md border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-all",
+        "group flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-md border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-all",
         isDragging && "opacity-50"
       )}
     >
       <div
         {...listeners}
-        className="cursor-grab active:cursor-grabbing text-neutral-400 hover:text-neutral-600"
+        className="cursor-grab active:cursor-grabbing text-neutral-400 hover:text-neutral-600 hidden sm:block"
       >
         <GripVertical className="h-4 w-4" />
       </div>
 
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between">
-          <h4 className="font-medium truncate text-black dark:text-white">
+      <div className="flex-1 min-w-0" onClick={onEdit}>
+        <div className="flex items-center justify-between gap-2">
+          <h4 className="font-medium truncate text-sm md:text-base text-black dark:text-white">
             {entry.title}
           </h4>
-          <span className="font-semibold text-black dark:text-white">
+          <span className="font-semibold text-sm md:text-base text-black dark:text-white shrink-0">
             {formatCurrency(entry.amount, currency)}
           </span>
         </div>
         {(entry.description || entry.category) && (
-          <div className="flex items-center gap-2 mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+          <div className="flex items-center gap-2 mt-1 text-xs md:text-sm text-neutral-500 dark:text-neutral-400">
             {entry.category && (
-              <span className="px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-xs">
+              <span className="px-1.5 md:px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-xs">
                 {entry.category}
               </span>
             )}
@@ -561,9 +569,9 @@ function EntryCard({ entry, currency, onEdit, onDelete }: EntryCardProps) {
           </div>
         )}
         {entry.tags && entry.tags.length > 0 && (
-          <div className="flex items-center gap-1 mt-1">
+          <div className="flex items-center gap-1 mt-1 flex-wrap">
             <Tag className="h-3 w-3 text-neutral-400" />
-            {entry.tags.map((tag, i) => (
+            {entry.tags.slice(0, 3).map((tag, i) => (
               <span
                 key={i}
                 className="text-xs text-neutral-600 dark:text-neutral-400"
@@ -571,6 +579,11 @@ function EntryCard({ entry, currency, onEdit, onDelete }: EntryCardProps) {
                 #{tag}
               </span>
             ))}
+            {entry.tags.length > 3 && (
+              <span className="text-xs text-neutral-400">
+                +{entry.tags.length - 3}
+              </span>
+            )}
           </div>
         )}
       </div>
@@ -580,7 +593,7 @@ function EntryCard({ entry, currency, onEdit, onDelete }: EntryCardProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 opacity-0 group-hover:opacity-100"
+            className="h-7 w-7 md:h-8 md:w-8 shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
           >
             <MoreHorizontal className="h-4 w-4" />
           </Button>

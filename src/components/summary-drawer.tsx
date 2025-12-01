@@ -70,13 +70,13 @@ export function SummaryDrawer() {
       />
 
       {/* Drawer */}
-      <div className="absolute right-0 top-0 h-full w-full max-w-md bg-white dark:bg-black shadow-xl overflow-y-auto">
-        <div className="p-6">
+      <div className="absolute right-0 top-0 h-full w-full md:max-w-md bg-white dark:bg-black shadow-xl overflow-y-auto animate-in slide-in-from-right duration-200">
+        <div className="p-4 md:p-6">
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-4 md:mb-6">
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-neutral-500" />
-              <h2 className="text-xl font-bold">AI Summaries</h2>
+              <h2 className="text-lg md:text-xl font-bold">AI Summaries</h2>
             </div>
             <Button
               variant="ghost"

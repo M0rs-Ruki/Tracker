@@ -15,6 +15,7 @@ interface AppState {
   // Folders
   folders: IFolder[];
   isLoadingFolders: boolean;
+  isCreatingFolder: boolean;
   fetchFolders: () => Promise<void>;
   createFolder: (data: {
     name?: string;
@@ -28,6 +29,7 @@ interface AppState {
   currentPage: IPage | null;
   isLoadingPages: boolean;
   isLoadingCurrentPage: boolean;
+  isCreatingPage: boolean;
   fetchPages: () => Promise<void>;
   fetchPage: (id: string) => Promise<void>;
   createPage: (data: {
@@ -107,6 +109,7 @@ export const useStore = create<AppState>((set, get) => ({
   // Folders
   folders: [],
   isLoadingFolders: false,
+  isCreatingFolder: false,
   fetchFolders: async () => {
     set({ isLoadingFolders: true });
     try {
@@ -119,9 +122,14 @@ export const useStore = create<AppState>((set, get) => ({
     }
   },
   createFolder: async (data) => {
-    const response = await folderApi.create(data);
-    set((state) => ({ folders: [...state.folders, response.data] }));
-    return response.data;
+    set({ isCreatingFolder: true });
+    try {
+      const response = await folderApi.create(data);
+      set((state) => ({ folders: [...state.folders, response.data] }));
+      return response.data;
+    } finally {
+      set({ isCreatingFolder: false });
+    }
   },
   updateFolder: async (id, data) => {
     const response = await folderApi.update(id, data);
@@ -144,6 +152,7 @@ export const useStore = create<AppState>((set, get) => ({
   currentPage: null,
   isLoadingPages: false,
   isLoadingCurrentPage: false,
+  isCreatingPage: false,
   fetchPages: async () => {
     set({ isLoadingPages: true });
     try {
@@ -167,9 +176,15 @@ export const useStore = create<AppState>((set, get) => ({
     }
   },
   createPage: async (data) => {
-    const response = await pageApi.create(data);
-    set((state) => ({ pages: [...state.pages, response.data] }));
-    return response.data;
+    set({ isCreatingPage: true });
+    try {
+      const response = await pageApi.create(data);
+      const newPage = response.data;
+      set((state) => ({ pages: [...state.pages, newPage] }));
+      return newPage;
+    } finally {
+      set({ isCreatingPage: false });
+    }
   },
   updatePage: async (id, data) => {
     set({ isSaving: true });

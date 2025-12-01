@@ -107,8 +107,8 @@ export function Onboarding({ onComplete }: OnboardingProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-white dark:bg-black flex items-center justify-center p-4 z-50">
-      <div className="w-full max-w-lg bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-xl overflow-hidden">
+    <div className="fixed inset-0 bg-white dark:bg-black flex items-center justify-center p-3 md:p-4 z-50 overflow-y-auto">
+      <div className="w-full max-w-lg bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-xl overflow-hidden my-auto">
         {/* Progress Bar */}
         <div className="h-1 bg-neutral-100 dark:bg-neutral-900">
           <div
@@ -117,17 +117,17 @@ export function Onboarding({ onComplete }: OnboardingProps) {
           />
         </div>
 
-        <div className="p-8">
+        <div className="p-4 md:p-8">
           {/* Step 1: Welcome */}
           {step === 1 && (
             <div className="text-center">
-              <div className="w-20 h-20 bg-black dark:bg-white rounded-full flex items-center justify-center mx-auto mb-6">
-                <Wallet className="h-10 w-10 text-white dark:text-black" />
+              <div className="w-16 h-16 md:w-20 md:h-20 bg-black dark:bg-white rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
+                <Wallet className="h-8 w-8 md:h-10 md:w-10 text-white dark:text-black" />
               </div>
-              <h1 className="text-2xl font-bold mb-2 text-black dark:text-white">
+              <h1 className="text-xl md:text-2xl font-bold mb-2 text-black dark:text-white">
                 Welcome to Finance Tracker! 💰
               </h1>
-              <p className="text-neutral-500 dark:text-neutral-400 mb-6">
+              <p className="text-sm md:text-base text-neutral-500 dark:text-neutral-400 mb-4 md:mb-6">
                 Let&apos;s set up your personal finance workspace. It only takes
                 a minute!
               </p>
@@ -141,10 +141,10 @@ export function Onboarding({ onComplete }: OnboardingProps) {
           {/* Step 2: Name */}
           {step === 2 && (
             <div>
-              <h2 className="text-xl font-bold mb-2 text-black dark:text-white">
+              <h2 className="text-lg md:text-xl font-bold mb-2 text-black dark:text-white">
                 What&apos;s your name?
               </h2>
-              <p className="text-neutral-500 dark:text-neutral-400 mb-6">
+              <p className="text-sm md:text-base text-neutral-500 dark:text-neutral-400 mb-4 md:mb-6">
                 We&apos;ll use this to personalize your experience.
               </p>
               <div className="space-y-4">
@@ -167,13 +167,13 @@ export function Onboarding({ onComplete }: OnboardingProps) {
           {/* Step 3: Budget */}
           {step === 3 && (
             <div>
-              <div className="w-12 h-12 bg-neutral-100 dark:bg-neutral-900 rounded-full flex items-center justify-center mb-4">
-                <Settings className="h-6 w-6 text-black dark:text-white" />
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-neutral-100 dark:bg-neutral-900 rounded-full flex items-center justify-center mb-3 md:mb-4">
+                <Settings className="h-5 w-5 md:h-6 md:w-6 text-black dark:text-white" />
               </div>
-              <h2 className="text-xl font-bold mb-2 text-black dark:text-white">
+              <h2 className="text-lg md:text-xl font-bold mb-2 text-black dark:text-white">
                 Set your monthly budget
               </h2>
-              <p className="text-neutral-500 dark:text-neutral-400 mb-6">
+              <p className="text-sm md:text-base text-neutral-500 dark:text-neutral-400 mb-4 md:mb-6">
                 This helps us track your spending and alert you when you&apos;re
                 approaching your limit.
               </p>
