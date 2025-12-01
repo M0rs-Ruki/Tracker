@@ -45,6 +45,13 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
     openrouter: "",
     huggingface: "",
   });
+  const [aiKeyStatus, setAiKeyStatus] = useState({
+    openai: false,
+    google: false,
+    anthropic: false,
+    openrouter: false,
+    huggingface: false,
+  });
 
   const [newExpense, setNewExpense] = useState({ title: "", amount: "" });
 
@@ -77,6 +84,22 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
       initializedForUser.current = null;
     }
   }, [open]);
+
+  // Fetch AI key presence status when dialog opens or after user changes
+  useEffect(() => {
+    const fetchStatus = async () => {
+      try {
+        const res = await fetch("/api/user/ai-keys/status");
+        if (res.ok) {
+          const data = await res.json();
+          setAiKeyStatus(data);
+        }
+      } catch (e) {
+        console.error("Failed to fetch AI key status:", e);
+      }
+    };
+    if (open) fetchStatus();
+  }, [open, user?.email]);
 
   const addFixedExpense = async () => {
     console.log("=== ADD CLICKED ===");
@@ -199,13 +222,34 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
     try {
       const keysToSave: Record<string, string> = {};
       Object.entries(aiKeys).forEach(([provider, key]) => {
-        if (key) keysToSave[provider] = key;
+        const trimmed = (key || "").trim();
+        if (trimmed) keysToSave[provider] = trimmed;
       });
 
+      console.log("Saving AI keys for providers:", Object.keys(keysToSave));
+
       if (Object.keys(keysToSave).length > 0) {
-        await updateUser({ aiKeys: keysToSave });
+        const resp = await fetch("/api/user", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ aiKeys: keysToSave }),
+        });
+        const json = await resp.json();
+        console.log("/api/user PATCH response:", json);
+        if (!resp.ok) throw new Error(json?.error || "Failed to save AI keys");
       }
       await fetchUser();
+      // Refresh status after save
+      try {
+        const res = await fetch("/api/user/ai-keys/status");
+        if (res.ok) {
+          const data = await res.json();
+          setAiKeyStatus(data);
+          console.log("AI key status:", data);
+        }
+      } catch (e) {
+        console.error("Failed to refresh AI key status:", e);
+      }
       setAiKeys({
         openai: "",
         google: "",
@@ -399,6 +443,9 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
 
             <div>
               <Label htmlFor="openai-key">OpenAI API Key</Label>
+              <div className="text-xs text-neutral-500 dark:text-neutral-400">
+                Status: {aiKeyStatus.openai ? "Saved" : "Not set"}
+              </div>
               <Input
                 id="openai-key"
                 type="password"
@@ -413,6 +460,9 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
 
             <div>
               <Label htmlFor="google-key">Google Gemini API Key</Label>
+              <div className="text-xs text-neutral-500 dark:text-neutral-400">
+                Status: {aiKeyStatus.google ? "Saved" : "Not set"}
+              </div>
               <Input
                 id="google-key"
                 type="password"
@@ -427,6 +477,9 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
 
             <div>
               <Label htmlFor="anthropic-key">Anthropic API Key</Label>
+              <div className="text-xs text-neutral-500 dark:text-neutral-400">
+                Status: {aiKeyStatus.anthropic ? "Saved" : "Not set"}
+              </div>
               <Input
                 id="anthropic-key"
                 type="password"
@@ -441,6 +494,9 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
 
             <div>
               <Label htmlFor="openrouter-key">OpenRouter API Key</Label>
+              <div className="text-xs text-neutral-500 dark:text-neutral-400">
+                Status: {aiKeyStatus.openrouter ? "Saved" : "Not set"}
+              </div>
               <Input
                 id="openrouter-key"
                 type="password"
@@ -455,6 +511,9 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
 
             <div>
               <Label htmlFor="huggingface-key">HuggingFace API Key</Label>
+              <div className="text-xs text-neutral-500 dark:text-neutral-400">
+                Status: {aiKeyStatus.huggingface ? "Saved" : "Not set"}
+              </div>
               <Input
                 id="huggingface-key"
                 type="password"

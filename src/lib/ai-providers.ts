@@ -95,7 +95,8 @@ async function generateWithGoogle(
   userPrompt: string
 ): Promise<AIResponse> {
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  // Use a valid v1beta model name supported for generateContent
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
 
   const result = await model.generateContent(
     `${systemPrompt}\n\n${userPrompt}`

@@ -89,17 +89,22 @@ export async function PATCH(request: NextRequest) {
 
     // Encrypt AI keys before storing
     if (body.aiKeys) {
+      console.log("AI Keys received in PATCH:", Object.keys(body.aiKeys));
       const encryptedKeys: Record<string, string> = {};
       for (const [provider, key] of Object.entries(body.aiKeys)) {
         if (key && typeof key === "string") {
+          console.log(`Encrypting key for provider: ${provider}`);
           encryptedKeys[provider] = encrypt(key);
         }
       }
-      // Merge with existing keys
-      updateData.aiKeys = {
-        ...currentUser.aiKeys,
-        ...encryptedKeys,
-      };
+      console.log("Providers with non-empty keys:", Object.keys(encryptedKeys));
+      // Use dot notation to update each key individually
+      for (const [provider, encKey] of Object.entries(encryptedKeys)) {
+        updateData[`aiKeys.${provider}`] = encKey;
+      }
+      if (Object.keys(encryptedKeys).length === 0) {
+        console.log("No valid AI keys to update.");
+      }
     }
 
     const user = await User.findOneAndUpdate(
