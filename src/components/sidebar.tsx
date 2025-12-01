@@ -283,7 +283,11 @@ export function Sidebar({
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent
+              align="end"
+              sideOffset={6}
+              className="w-56 max-w-[90vw]"
+            >
               <DropdownMenuItem onClick={onSettingsOpen}>
                 <Settings className="mr-2 h-4 w-4" />
                 Settings
@@ -377,7 +381,7 @@ export function Sidebar({
 
       {/* Rename Dialog */}
       <Dialog open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
-        <DialogContent>
+        <DialogContent className="w-[95vw] sm:w-auto sm:max-w-md p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>
               Rename {renameTarget?.type === "folder" ? "Folder" : "Page"}
@@ -408,7 +412,7 @@ export function Sidebar({
         open={folderSelectDialogOpen}
         onOpenChange={setFolderSelectDialogOpen}
       >
-        <DialogContent>
+        <DialogContent className="w-[95vw] sm:w-auto sm:max-w-md p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>Select a Folder</DialogTitle>
           </DialogHeader>
@@ -458,16 +462,18 @@ export function Sidebar({
               className="absolute inset-0 bg-black/50"
               onClick={() => setSidebarOpen(false)}
             />
-            <div className="absolute left-0 top-0 h-full w-[85%] max-w-[320px] bg-white dark:bg-black border-r border-neutral-200 dark:border-neutral-800 animate-in slide-in-from-left duration-200">
+            <div className="absolute left-0 top-0 h-full w-[80%] max-w-[360px] bg-white dark:bg-black border-r border-neutral-200 dark:border-neutral-800 animate-in slide-in-from-left duration-200 px-2">
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute right-2 top-2 z-10"
+                className="absolute right-2 top-2 z-20 h-10 w-10"
                 onClick={() => setSidebarOpen(false)}
               >
                 <X className="h-5 w-5" />
               </Button>
-              {sidebarContent}
+              <div className="pt-12 h-full overflow-hidden">
+                {sidebarContent}
+              </div>
             </div>
           </div>
         )}
@@ -603,7 +609,11 @@ function FolderItem({
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent
+            align="end"
+            sideOffset={6}
+            className="w-56 max-w-[90vw]"
+          >
             <DropdownMenuItem
               onClick={() =>
                 onRename("folder", folder._id.toString(), folder.name)
@@ -729,7 +739,11 @@ function PageItem({
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent
+            align="end"
+            sideOffset={6}
+            className="w-56 max-w-[90vw]"
+          >
             <DropdownMenuItem
               onClick={(e) => {
                 e.stopPropagation();

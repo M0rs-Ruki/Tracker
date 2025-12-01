@@ -267,7 +267,7 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
-        className="max-w-lg max-h-[90vh] overflow-y-auto"
+        className="w-[95vw] sm:w-auto sm:max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6"
         aria-describedby={undefined}
       >
         <DialogHeader>

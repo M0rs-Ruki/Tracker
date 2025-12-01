@@ -375,7 +375,7 @@ export function PageCanvas({ page }: PageCanvasProps) {
         open={editingEntry !== null}
         onOpenChange={(open) => !open && setEditingEntry(null)}
       >
-        <DialogContent>
+        <DialogContent className="w-[95vw] sm:w-auto sm:max-w-lg p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>
               {editingEntry?.entry ? "Edit Entry" : "Add Entry"}
@@ -673,7 +673,11 @@ function EntryCard({ entry, currency, onEdit, onDelete }: EntryCardProps) {
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent
+          align="end"
+          sideOffset={6}
+          className="w-56 max-w-[90vw]"
+        >
           <DropdownMenuItem onClick={onEdit}>
             <Pencil className="mr-2 h-4 w-4" />
             Edit
