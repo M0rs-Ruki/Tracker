@@ -103,6 +103,9 @@ export function Sidebar({
     name: string;
   } | null>(null);
   const [newName, setNewName] = useState("");
+  
+  // Folder selection dialog for creating pages
+  const [folderSelectDialogOpen, setFolderSelectDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchFolders();
@@ -124,13 +127,31 @@ export function Sidebar({
     }
   };
 
-  const handleCreatePage = async (folderId?: string | null) => {
+  // Opens folder selection dialog if no folder specified, otherwise creates page directly
+  const handleCreatePageWithFolder = (folderId?: string) => {
+    if (folderId) {
+      // Create page directly in the specified folder
+      handleCreatePageInFolder(folderId);
+    } else {
+      // No folder specified - check if folders exist
+      if (folders.length === 0) {
+        // No folders exist - show alert
+        alert("A page cannot exist without a folder. Please create a folder first.");
+        return;
+      }
+      // Open folder selection dialog
+      setFolderSelectDialogOpen(true);
+    }
+  };
+
+  const handleCreatePageInFolder = async (folderId: string) => {
     try {
       const page = await createPage({ title: "Untitled Page", folderId });
       // Use the _id from the response, ensuring it's a string
       const pageId =
         typeof page._id === "object" ? page._id.toString() : String(page._id);
       onPageSelect(pageId);
+      setFolderSelectDialogOpen(false);
     } catch (error) {
       console.error("Error creating page:", error);
     }
@@ -169,9 +190,14 @@ export function Sidebar({
   };
 
   const handleDuplicate = async (page: IPage) => {
+    // Pages must have a folderId - use the source page's folderId
+    if (!page.folderId) {
+      console.error("Cannot duplicate page without folderId");
+      return;
+    }
     await createPage({
       title: `${page.title} (Copy)`,
-      folderId: page.folderId?.toString() || null,
+      folderId: page.folderId.toString(),
       icon: page.icon,
     });
   };
@@ -187,12 +213,16 @@ export function Sidebar({
     if (!over || active.id === over.id) return;
 
     // Handle reordering logic here
-    // This is a simplified version - you'd want more complex logic for nested items
+    // IMPORTANT: Pages cannot be moved to root level - they must always be in a folder
+    // When implementing full drag-drop:
+    // 1. Check if dragged item is a page
+    // 2. If target is root level (no folder), reject the move
+    // 3. Only allow pages to be dropped into folders or reordered within folders
   };
 
   // Build tree structure
   const rootFolders = folders.filter((f) => !f.parentFolderId);
-  const rootPages = pages.filter((p) => !p.folderId);
+  // Root pages are no longer allowed - pages must be in folders
 
   const renderFolder = (folder: IFolder, level: number = 0) => {
     const childFolders = folders.filter(
@@ -216,7 +246,7 @@ export function Sidebar({
         onDelete={(type, id) => handleDelete(type, id)}
         onDuplicate={handleDuplicate}
         onCreateFolder={() => handleCreateFolder(folder._id.toString())}
-        onCreatePage={() => handleCreatePage(folder._id.toString())}
+        onCreatePage={() => handleCreatePageInFolder(folder._id.toString())}
         renderFolder={renderFolder}
       />
     );
@@ -296,7 +326,7 @@ export function Sidebar({
         <Button
           variant="ghost"
           className="w-full justify-start text-sm"
-          onClick={() => handleCreatePage(null)}
+          onClick={() => handleCreatePageWithFolder()}
           disabled={isCreatingPage}
         >
           {isCreatingPage ? (
@@ -322,34 +352,18 @@ export function Sidebar({
               onDragEnd={handleDragEnd}
             >
               <SortableContext
-                items={[...rootFolders, ...rootPages].map((item) =>
-                  item._id.toString()
-                )}
+                items={rootFolders.map((item) => item._id.toString())}
                 strategy={verticalListSortingStrategy}
               >
                 {rootFolders.map((folder) => renderFolder(folder, 0))}
-                {rootPages.map((page) => (
-                  <PageItem
-                    key={page._id.toString()}
-                    page={page}
-                    level={0}
-                    isSelected={selectedPageId === page._id.toString()}
-                    onSelect={() => onPageSelect(page._id.toString())}
-                    onRename={() =>
-                      handleRename("page", page._id.toString(), page.title)
-                    }
-                    onDelete={() => handleDelete("page", page._id.toString())}
-                    onDuplicate={() => handleDuplicate(page)}
-                  />
-                ))}
               </SortableContext>
             </DndContext>
 
-            {rootFolders.length === 0 && rootPages.length === 0 && (
+            {rootFolders.length === 0 && (
               <div className="text-center text-neutral-500 dark:text-neutral-400 py-8 text-sm">
-                No folders or pages yet.
+                No folders yet.
                 <br />
-                Create your first page to get started!
+                Create a folder first, then add pages inside it!
               </div>
             )}
           </>
@@ -383,6 +397,45 @@ export function Sidebar({
               Cancel
             </Button>
             <Button onClick={handleRenameSubmit}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Folder Selection Dialog for Creating Pages */}
+      <Dialog open={folderSelectDialogOpen} onOpenChange={setFolderSelectDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Select a Folder</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
+            Pages must be created inside a folder. Select where to create your new page:
+          </p>
+          <div className="max-h-64 overflow-y-auto space-y-1">
+            {folders.map((folder) => (
+              <Button
+                key={folder._id.toString()}
+                variant="ghost"
+                className="w-full justify-start"
+                onClick={() => handleCreatePageInFolder(folder._id.toString())}
+                disabled={isCreatingPage}
+              >
+                <FolderIcon className="mr-2 h-4 w-4" />
+                {folder.name}
+                {folder.parentFolderId && (
+                  <span className="ml-2 text-xs text-neutral-400">
+                    (nested)
+                  </span>
+                )}
+              </Button>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setFolderSelectDialogOpen(false)}
+            >
+              Cancel
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -47,6 +47,15 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    
+    // Validate that folderId is provided - pages must be inside a folder
+    if (!body.folderId) {
+      return NextResponse.json(
+        { error: "A page cannot exist without a folder. Please create a folder first." },
+        { status: 400 }
+      );
+    }
+    
     await dbConnect();
 
     const user = await User.findOne({ email: session.user.email });
@@ -57,7 +66,7 @@ export async function POST(request: NextRequest) {
     // Get the highest order
     const lastPage = await Page.findOne({
       userId: user._id,
-      folderId: body.folderId || null,
+      folderId: body.folderId,
     }).sort({ order: -1 });
 
     // Create page with 7 empty days
@@ -68,7 +77,7 @@ export async function POST(request: NextRequest) {
 
     const page = await Page.create({
       userId: user._id,
-      folderId: body.folderId || null,
+      folderId: body.folderId,
       title: body.title || "Untitled Page",
       icon: body.icon || "📄",
       days,

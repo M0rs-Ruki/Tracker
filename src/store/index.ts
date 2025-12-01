@@ -34,7 +34,7 @@ interface AppState {
   fetchPage: (id: string) => Promise<void>;
   createPage: (data: {
     title?: string;
-    folderId?: string | null;
+    folderId: string; // Required - pages must be in a folder
     icon?: string;
   }) => Promise<IPage>;
   updatePage: (id: string, data: Partial<IPage>) => Promise<void>;

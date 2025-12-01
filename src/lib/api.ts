@@ -53,7 +53,7 @@ export const pageApi = {
   getAll: (folderId?: string | null) =>
     api.get("/page", { params: { folderId } }),
   get: (id: string) => api.get(`/page/${id}`),
-  create: (data: { title?: string; folderId?: string | null; icon?: string }) =>
+  create: (data: { title?: string; folderId: string; icon?: string }) => // folderId is required
     api.post("/page", data),
   update: (id: string, data: Record<string, unknown>) =>
     api.patch(`/page/${id}`, data),

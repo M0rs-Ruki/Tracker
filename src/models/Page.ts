@@ -18,7 +18,7 @@ export interface IDay {
 export interface IPage extends Document {
   _id: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
-  folderId: mongoose.Types.ObjectId | null;
+  folderId: mongoose.Types.ObjectId; // Required - pages must be in a folder
   title: string;
   icon: string;
   days: IDay[];
@@ -48,7 +48,7 @@ const DaySchema = new Schema<IDay>(
 const PageSchema = new Schema<IPage>(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    folderId: { type: Schema.Types.ObjectId, ref: "Folder", default: null },
+    folderId: { type: Schema.Types.ObjectId, ref: "Folder", required: true }, // Pages must be in a folder
     title: { type: String, required: true, default: "Untitled Page" },
     icon: { type: String, default: "📄" },
     days: {
