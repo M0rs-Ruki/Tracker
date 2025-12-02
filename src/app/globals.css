@@ -149,3 +149,13 @@ h6 {
   transition-duration: 150ms;
   transition-timing-function: ease;
 }
+
+/* Hide scrollbar but keep scroll functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

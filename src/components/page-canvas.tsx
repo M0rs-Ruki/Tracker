@@ -306,16 +306,12 @@ export function PageCanvas({ page }: PageCanvasProps) {
               Budget Overview
             </h3>
             {(() => {
-              // Calculate fixed expenses total
               const fixedExpensesTotal = (
                 user.settings.fixedExpenses || []
               ).reduce((sum, expense) => sum + (expense.amount || 0), 0);
-              // Real budget = Monthly Budget - Fixed Expenses
               const realBudgetMonthly =
                 user.settings.monthlyBudget - fixedExpensesTotal;
-              // Weekly budget based on real budget
               const weeklyBudget = realBudgetMonthly / 4;
-              // Status check against weekly budget
               const isOverBudget = pageTotal > weeklyBudget;
 
               return (
@@ -375,20 +371,24 @@ export function PageCanvas({ page }: PageCanvasProps) {
         )}
       </div>
 
-      {/* Entry Dialog */}
+      {/* Entry Dialog - FIXED FOR MOBILE */}
       <Dialog
         open={editingEntry !== null}
         onOpenChange={(open) => !open && setEditingEntry(null)}
       >
-        <DialogContent className="w-[95vw] sm:w-auto sm:max-w-lg p-4 sm:p-6">
+        <DialogContent className="w-[95vw] max-w-[480px] sm:max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>
               {editingEntry?.entry ? "Edit Entry" : "Add Entry"}
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+
+          <div className="space-y-5">
+            {/* Title */}
             <div>
-              <label className="text-sm font-medium">Title *</label>
+              <label className="block text-sm font-medium mb-1.5">
+                Title *
+              </label>
               <Input
                 value={entryForm.title}
                 onChange={(e) =>
@@ -397,8 +397,12 @@ export function PageCanvas({ page }: PageCanvasProps) {
                 placeholder="e.g., Groceries"
               />
             </div>
+
+            {/* Amount */}
             <div>
-              <label className="text-sm font-medium">Amount *</label>
+              <label className="block text-sm font-medium mb-1.5">
+                Amount *
+              </label>
               <Input
                 type="number"
                 value={entryForm.amount}
@@ -408,8 +412,12 @@ export function PageCanvas({ page }: PageCanvasProps) {
                 placeholder="e.g., 500"
               />
             </div>
+
+            {/* Description */}
             <div>
-              <label className="text-sm font-medium">Description</label>
+              <label className="block text-sm font-medium mb-1.5">
+                Description
+              </label>
               <Textarea
                 value={entryForm.description}
                 onChange={(e) =>
@@ -419,8 +427,12 @@ export function PageCanvas({ page }: PageCanvasProps) {
                 rows={2}
               />
             </div>
+
+            {/* Category */}
             <div className="relative">
-              <label className="text-sm font-medium">Category</label>
+              <label className="block text-sm font-medium mb-1.5">
+                Category
+              </label>
               <Input
                 value={entryForm.category}
                 onChange={(e) => {
@@ -428,14 +440,13 @@ export function PageCanvas({ page }: PageCanvasProps) {
                   setShowCategorySuggestions(true);
                 }}
                 onFocus={() => setShowCategorySuggestions(true)}
-                onBlur={() => {
-                  // Delay to allow click on suggestion
-                  setTimeout(() => setShowCategorySuggestions(false), 150);
-                }}
+                onBlur={() =>
+                  setTimeout(() => setShowCategorySuggestions(false), 150)
+                }
                 placeholder="e.g., Food, Transport"
                 autoComplete="off"
               />
-              {/* Category Suggestions Dropdown */}
+
               {showCategorySuggestions && filteredCategories.length > 0 && (
                 <div className="absolute z-50 w-full mt-1 max-h-48 overflow-y-auto rounded-md border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black shadow-lg">
                   {filteredCategories.map((category) => (
@@ -454,8 +465,10 @@ export function PageCanvas({ page }: PageCanvasProps) {
                 </div>
               )}
             </div>
+
+            {/* Tags */}
             <div>
-              <label className="text-sm font-medium">
+              <label className="block text-sm font-medium mb-1.5">
                 Tags (comma separated)
               </label>
               <Input
@@ -465,9 +478,10 @@ export function PageCanvas({ page }: PageCanvasProps) {
                 }
                 placeholder="e.g., essential, weekly"
               />
-              {/* Quick Tag Chips */}
-              <div className="mt-2 overflow-x-auto">
-                <div className="flex gap-2 flex-nowrap sm:flex-wrap pr-1">
+
+              {/* Tag Chips - Mobile: 4 per row, Desktop: wraps */}
+              <div className="mt-2">
+                <div className="grid grid-cols-4 gap-2 sm:grid-cols-none sm:flex sm:flex-wrap">
                   {[
                     "essential",
                     "daily",
@@ -487,7 +501,7 @@ export function PageCanvas({ page }: PageCanvasProps) {
                         key={tag}
                         type="button"
                         className={cn(
-                          "px-3 py-2 text-sm sm:px-2 sm:py-1 sm:text-xs rounded border shrink-0",
+                          "w-full sm:w-auto px-3 py-1.5 text-xs rounded border",
                           isActive
                             ? "bg-black text-white dark:bg-white dark:text-black border-black dark:border-white"
                             : "bg-neutral-50 dark:bg-neutral-900 text-black dark:text-white border-neutral-200 dark:border-neutral-800"
@@ -513,15 +527,22 @@ export function PageCanvas({ page }: PageCanvasProps) {
               </div>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingEntry(null)}>
-              Cancel
-            </Button>
+
+          <DialogFooter className="flex-col gap-2 mt-6">
             <Button
               onClick={handleSaveEntry}
               disabled={!entryForm.title || !entryForm.amount}
+              className="w-full"
             >
               {editingEntry?.entry ? "Update" : "Add"}
+            </Button>
+
+            <Button
+              variant="outline"
+              onClick={() => setEditingEntry(null)}
+              className="w-full"
+            >
+              Cancel
             </Button>
           </DialogFooter>
         </DialogContent>
