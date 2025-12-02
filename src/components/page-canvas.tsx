@@ -82,6 +82,9 @@ export function PageCanvas({ page }: PageCanvasProps) {
   const [expandedDays, setExpandedDays] = useState<Record<number, boolean>>(
     Object.fromEntries(page.days.map((d) => [d.dayIndex, true]))
   );
+  const [entryExpanded, setEntryExpanded] = useState<Record<string, boolean>>(
+    {}
+  );
   const [editingEntry, setEditingEntry] = useState<{
     dayIndex: number;
     entry: IEntry | null;
@@ -290,6 +293,8 @@ export function PageCanvas({ page }: PageCanvasProps) {
               }
               onDragEnd={(event) => handleDragEnd(event, day.dayIndex)}
               sensors={sensors}
+              entryExpanded={entryExpanded}
+              setEntryExpanded={setEntryExpanded}
             />
           ))}
         </div>
@@ -490,6 +495,10 @@ interface DaySectionProps {
   onDeleteEntry: (entryId: string) => void;
   onDragEnd: (event: DragEndEvent) => void;
   sensors: ReturnType<typeof useSensors>;
+  entryExpanded: Record<string, boolean>;
+  setEntryExpanded: React.Dispatch<
+    React.SetStateAction<Record<string, boolean>>
+  >;
 }
 
 function DaySection({
@@ -502,6 +511,8 @@ function DaySection({
   onDeleteEntry,
   onDragEnd,
   sensors,
+  entryExpanded,
+  setEntryExpanded,
 }: DaySectionProps) {
   const dayTotal = day.entries.reduce((sum, entry) => sum + entry.amount, 0);
 
@@ -552,7 +563,7 @@ function DaySection({
         <div className="p-2 md:p-4 space-y-2">
           {day.entries.length === 0 ? (
             <div className="text-center py-6 md:py-8 text-neutral-500 dark:text-neutral-400 text-xs md:text-sm">
-              No entries yet. Click "Add" to create one.
+              No entries yet. Click &quot;Add&quot; to create one.
             </div>
           ) : (
             <DndContext
@@ -569,6 +580,13 @@ function DaySection({
                     key={entry._id.toString()}
                     entry={entry}
                     currency={currency}
+                    isExpanded={entryExpanded[entry._id.toString()] || false}
+                    onToggleExpand={() =>
+                      setEntryExpanded((prev) => ({
+                        ...prev,
+                        [entry._id.toString()]: !prev[entry._id.toString()],
+                      }))
+                    }
                     onEdit={() => onEditEntry(entry)}
                     onDelete={() => onDeleteEntry(entry._id.toString())}
                   />
@@ -586,11 +604,20 @@ function DaySection({
 interface EntryCardProps {
   entry: IEntry;
   currency: string;
+  isExpanded: boolean;
+  onToggleExpand: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }
 
-function EntryCard({ entry, currency, onEdit, onDelete }: EntryCardProps) {
+function EntryCard({
+  entry,
+  currency,
+  isExpanded,
+  onToggleExpand,
+  onEdit,
+  onDelete,
+}: EntryCardProps) {
   const {
     attributes,
     listeners,
@@ -605,89 +632,122 @@ function EntryCard({ entry, currency, onEdit, onDelete }: EntryCardProps) {
     transition,
   };
 
+  const hasDetails = !!(
+    entry.description ||
+    (entry.tags && entry.tags.length > 0)
+  );
+
   return (
     <div
       ref={setNodeRef}
       style={style}
       {...attributes}
       className={cn(
-        "group flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-md border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-all",
+        "group rounded-md border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-all overflow-hidden",
         isDragging && "opacity-50"
       )}
     >
+      {/* Collapsed Row */}
       <div
-        {...listeners}
-        className="cursor-grab active:cursor-grabbing text-neutral-400 hover:text-neutral-600 hidden sm:block"
+        className={cn(
+          "flex items-center gap-2 md:gap-3 p-2 md:p-3",
+          hasDetails && "cursor-pointer"
+        )}
+        onClick={() => hasDetails && onToggleExpand()}
       >
-        <GripVertical className="h-4 w-4" />
-      </div>
-
-      <div className="flex-1 min-w-0" onClick={onEdit}>
-        <div className="flex items-center justify-between gap-2">
-          <h4 className="font-medium truncate text-sm md:text-base text-black dark:text-white">
-            {entry.title}
-          </h4>
-          <span className="font-semibold text-sm md:text-base text-black dark:text-white shrink-0">
-            {formatCurrency(entry.amount, currency)}
-          </span>
-        </div>
-        {(entry.description || entry.category) && (
-          <div className="flex items-center gap-2 mt-1 text-xs md:text-sm text-neutral-500 dark:text-neutral-400">
-            {entry.category && (
-              <span className="px-1.5 md:px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-xs">
-                {entry.category}
-              </span>
-            )}
-            {entry.description && (
-              <span className="truncate">{entry.description}</span>
-            )}
-          </div>
-        )}
-        {entry.tags && entry.tags.length > 0 && (
-          <div className="flex items-center gap-1 mt-1 flex-wrap">
-            <Tag className="h-3 w-3 text-neutral-400" />
-            {entry.tags.slice(0, 3).map((tag, i) => (
-              <span
-                key={i}
-                className="text-xs text-neutral-600 dark:text-neutral-400"
-              >
-                #{tag}
-              </span>
-            ))}
-            {entry.tags.length > 3 && (
-              <span className="text-xs text-neutral-400">
-                +{entry.tags.length - 3}
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 md:h-8 md:w-8 shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
-          >
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align="end"
-          sideOffset={6}
-          className="w-56 max-w-[90vw]"
+        <div
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing text-neutral-400 hover:text-neutral-600 hidden sm:block"
+          onClick={(e) => e.stopPropagation()}
         >
-          <DropdownMenuItem onClick={onEdit}>
-            <Pencil className="mr-2 h-4 w-4" />
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={onDelete}>
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+          <GripVertical className="h-4 w-4" />
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <h4 className="font-medium truncate text-sm md:text-base text-black dark:text-white">
+                {entry.title}
+              </h4>
+
+              {entry.category && (
+                <span className="px-1.5 md:px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-xs shrink-0">
+                  {entry.category}
+                </span>
+              )}
+            </div>
+
+            <span className="font-semibold text-sm md:text-base text-black dark:text-white shrink-0">
+              {formatCurrency(entry.amount, currency)}
+            </span>
+          </div>
+        </div>
+
+        {hasDetails && (
+          <button
+            className="shrink-0 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-all duration-200"
+            style={{
+              transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleExpand();
+            }}
+          >
+            <ChevronDown className="h-4 w-4" />
+          </button>
+        )}
+
+        {/* Dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 md:h-8 md:w-8 shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+            >
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            sideOffset={6}
+            className="w-56 max-w-[90vw]"
+          >
+            <DropdownMenuItem onClick={onEdit}>
+              <Pencil className="mr-2 h-4 w-4" /> Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onDelete}>
+              <Trash2 className="mr-2 h-4 w-4" /> Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      {/* Expanded Details */}
+      {isExpanded && hasDetails && (
+        <div className="px-2 md:px-3 pb-2 md:pb-3 pt-1 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50">
+          {entry.description && (
+            <p className="text-xs md:text-sm text-neutral-600 dark:text-neutral-400 mt-1">
+              {entry.description}
+            </p>
+          )}
+
+          {entry.tags && entry.tags.length > 0 && (
+            <div className="flex items-center gap-1 mt-2 flex-wrap">
+              <Tag className="h-3 w-3 text-neutral-400" />
+              {entry.tags.map((tag, i) => (
+                <span
+                  key={i}
+                  className="text-xs text-neutral-600 dark:text-neutral-400"
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

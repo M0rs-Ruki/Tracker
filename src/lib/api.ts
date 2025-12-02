@@ -86,8 +86,8 @@ export const entryApi = {
 
 // AI API
 export const aiApi = {
-  generateDailySummary: (provider?: string) =>
-    api.post("/ai/summary/daily", { provider }),
+  generateDailySummary: (pageId: string, dayIndex: number, provider?: string) =>
+    api.post("/ai/summary/daily", { pageId, dayIndex, provider }),
   generateWeeklySummary: (provider?: string) =>
     api.post("/ai/summary/weekly", { provider }),
   getDailySummaries: (limit?: number) =>

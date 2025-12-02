@@ -36,6 +36,7 @@ export function SummaryDrawer() {
     fetchDailySummaries,
     fetchWeeklySummaries,
     user,
+    currentPage,
   } = useStore();
 
   const [selectedProvider, setSelectedProvider] = useState(
@@ -50,7 +51,16 @@ export function SummaryDrawer() {
   }, [summaryDrawerOpen, fetchDailySummaries, fetchWeeklySummaries]);
 
   const handleGenerateDaily = async () => {
-    await generateDailySummary(selectedProvider);
+    if (!currentPage) {
+      alert("Please select a page first to generate a daily summary.");
+      return;
+    }
+    try {
+      await generateDailySummary(selectedProvider);
+    } catch (error) {
+      console.error("Error generating daily summary:", error);
+      alert("Failed to generate daily summary. Please try again.");
+    }
   };
 
   const handleGenerateWeekly = async () => {
@@ -124,7 +134,7 @@ export function SummaryDrawer() {
             <TabsContent value="daily" className="mt-4 space-y-4">
               <Button
                 onClick={handleGenerateDaily}
-                disabled={isGeneratingSummary}
+                disabled={isGeneratingSummary || !currentPage}
                 className="w-full"
               >
                 {isGeneratingSummary ? (
@@ -139,6 +149,18 @@ export function SummaryDrawer() {
                   </>
                 )}
               </Button>
+
+              {!currentPage && (
+                <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                  <p className="text-sm text-amber-800 dark:text-amber-200 font-medium mb-2">
+                    No page selected
+                  </p>
+                  <p className="text-xs text-amber-700 dark:text-amber-300">
+                    Close this drawer and select a page from the sidebar to
+                    generate your daily summary.
+                  </p>
+                </div>
+              )}
 
               {dailySummaries.length === 0 ? (
                 <div className="text-center py-8 text-neutral-500 dark:text-neutral-400">

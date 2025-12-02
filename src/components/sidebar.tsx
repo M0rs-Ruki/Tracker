@@ -66,19 +66,15 @@ import { IPage } from "@/models/Page";
 interface SidebarProps {
   onPageSelect: (pageId: string) => void;
   onSettingsOpen: () => void;
-  selectedPageId: string | null;
 }
 
-export function Sidebar({
-  onPageSelect,
-  onSettingsOpen,
-  selectedPageId,
-}: SidebarProps) {
+export function Sidebar({ onPageSelect, onSettingsOpen }: SidebarProps) {
   const { data: session } = useSession();
   const isMobile = useIsMobile();
   const {
     folders,
     pages,
+    currentPage,
     sidebarOpen,
     setSidebarOpen,
     fetchFolders,
@@ -95,6 +91,8 @@ export function Sidebar({
     isCreatingFolder,
     isCreatingPage,
   } = useStore();
+
+  const selectedPageId = currentPage?._id.toString() || null;
 
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [renameTarget, setRenameTarget] = useState<{

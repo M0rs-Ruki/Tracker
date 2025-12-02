@@ -28,7 +28,6 @@ export default function DashboardPage() {
     setSidebarOpen,
   } = useStore();
 
-  const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   // Derive onboarding state from user data (no useEffect needed)
@@ -45,34 +44,27 @@ export default function DashboardPage() {
 
   // Fetch user on mount
   useEffect(() => {
-    if (session?.user) {
+    if (status === "authenticated") {
       fetchUser();
     }
-  }, [session, fetchUser]);
+  }, [status, fetchUser]);
 
   // Fetch page when selected
   useEffect(() => {
-    if (selectedPageId) {
-      fetchPage(selectedPageId);
-    } else {
-      setCurrentPage(null);
+    const currentPageId = currentPage?._id.toString();
+    if (currentPageId) {
+      // Page is already loaded in store
+      return;
     }
-  }, [selectedPageId, fetchPage, setCurrentPage]);
+  }, [currentPage]);
 
   // Handle page selection and close sidebar on mobile
   const handlePageSelect = (pageId: string) => {
-    // Don't re-fetch if already selected
-    if (pageId === selectedPageId) {
-      // Just close sidebar on mobile
-      if (window.innerWidth < 768) {
-        setSidebarOpen(false);
-      }
-      return;
-    }
+    // Fetch the selected page
+    fetchPage(pageId);
 
-    setSelectedPageId(pageId);
     // Close sidebar on mobile after selecting a page
-    if (window.innerWidth < 768) {
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
       setSidebarOpen(false);
     }
   };
@@ -96,17 +88,23 @@ export default function DashboardPage() {
 
   // Show onboarding
   if (showOnboarding) {
-    return (
-      <Onboarding
-        onComplete={() => {
-          fetchUser();
-        }}
-      />
-    );
+    return <Onboarding onComplete={fetchUser} />;
+  }
+
+  // Wait for user to be fully loaded
+  if (!user) {
+    return null;
   }
 
   return (
     <div className="flex h-screen bg-white dark:bg-black overflow-hidden">
+      {/* Mobile Backdrop Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-30 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
       {/* Mobile Header */}
       <div className="fixed top-0 left-0 right-0 z-40 md:hidden bg-white dark:bg-black border-b border-neutral-200 dark:border-neutral-800 px-4 py-3 flex items-center justify-between">
         <Button
@@ -126,11 +124,10 @@ export default function DashboardPage() {
       <Sidebar
         onPageSelect={handlePageSelect}
         onSettingsOpen={() => setSettingsOpen(true)}
-        selectedPageId={selectedPageId}
       />
 
       {/* Main Content */}
-      <main className="flex-1 overflow-hidden pt-14 md:pt-0">
+      <main className="flex-1 overflow-y-auto pt-14 md:pt-0">
         {isLoadingCurrentPage ? (
           <div className="flex items-center justify-center h-full">
             <Spinner size="lg" />

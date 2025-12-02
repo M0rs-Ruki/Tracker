@@ -268,7 +268,20 @@ export const useStore = create<AppState>((set, get) => ({
   generateDailySummary: async (provider) => {
     set({ isGeneratingSummary: true });
     try {
-      const response = await aiApi.generateDailySummary(provider);
+      const currentPage = get().currentPage;
+      if (!currentPage) {
+        throw new Error("No page selected");
+      }
+
+      // Get today's day of week (0 = Sunday, 1 = Monday, etc.)
+      const today = new Date();
+      const dayIndex = today.getDay();
+
+      const response = await aiApi.generateDailySummary(
+        currentPage._id.toString(),
+        dayIndex,
+        provider
+      );
       set((state) => ({
         dailySummaries: [
           response.data,

@@ -17,6 +17,15 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const provider = body.provider as AIProvider | undefined;
+    const pageId = body.pageId as string;
+    const dayIndex = body.dayIndex as number;
+
+    if (!pageId || dayIndex === undefined) {
+      return NextResponse.json(
+        { error: "pageId and dayIndex are required" },
+        { status: 400 }
+      );
+    }
 
     await dbConnect();
     const user = await User.findOne({ email: session.user.email });
@@ -24,14 +33,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // Get the specific page
+    const page = await Page.findById(pageId);
+    if (!page || page.userId.toString() !== user._id.toString()) {
+      return NextResponse.json(
+        { error: "Page not found or unauthorized" },
+        { status: 404 }
+      );
+    }
+
+    // Get the specific day
+    const day = page.days.find((d) => d.dayIndex === dayIndex);
+    if (!day) {
+      return NextResponse.json({ error: "Day not found" }, { status: 404 });
+    }
+
     // Get today's date
     const today = new Date();
     const dateStr = today.toISOString().split("T")[0];
 
-    // Get all pages for the user
-    const pages = await Page.find({ userId: user._id });
-
-    // Calculate total spending from all entries
+    // Calculate total spending from ONLY this day's entries
     let totalSpent = 0;
     const entriesByCategory: Record<string, number> = {};
     const allEntries: Array<{
@@ -40,35 +61,45 @@ export async function POST(request: NextRequest) {
       category: string;
     }> = [];
 
-    for (const page of pages) {
-      for (const day of page.days) {
-        for (const entry of day.entries) {
-          totalSpent += entry.amount;
-          const category = entry.category || "Uncategorized";
-          entriesByCategory[category] =
-            (entriesByCategory[category] || 0) + entry.amount;
-          allEntries.push({
-            title: entry.title,
-            amount: entry.amount,
-            category,
-          });
-        }
-      }
+    for (const entry of day.entries) {
+      totalSpent += entry.amount;
+      const category = entry.category || "Uncategorized";
+      entriesByCategory[category] =
+        (entriesByCategory[category] || 0) + entry.amount;
+      allEntries.push({
+        title: entry.title,
+        amount: entry.amount,
+        category,
+      });
     }
+
+    // Get day name
+    const dayNames = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    const dayName = dayNames[dayIndex];
 
     // Build prompt for AI
     const prompt = `
-Analyze this daily financial data:
+Analyze this DAILY financial data for ${dayName} ONLY:
 
 Total Spent Today: ${user.settings.currency || "₹"}${totalSpent.toFixed(2)}
 Monthly Budget: ${
       user.settings.currency || "₹"
     }${user.settings.monthlyBudget.toFixed(2)}
-Fixed Expenses: ${user.settings.fixedExpenses
-      .map((e) => `${e.title}: ${user.settings.currency || "₹"}${e.amount}`)
-      .join(", ")}
+Daily Budget Target: ${user.settings.currency || "₹"}${(
+      (user.settings.monthlyBudget -
+        user.settings.fixedExpenses.reduce((sum, e) => sum + e.amount, 0)) /
+      30
+    ).toFixed(2)}
 
-Spending by Category:
+Spending by Category (Today Only):
 ${Object.entries(entriesByCategory)
   .map(
     ([cat, amount]) =>
@@ -76,9 +107,8 @@ ${Object.entries(entriesByCategory)
   )
   .join("\n")}
 
-Recent Entries:
+All Entries for ${dayName}:
 ${allEntries
-  .slice(-10)
   .map(
     (e) =>
       `- ${e.title}: ${user.settings.currency || "₹"}${e.amount.toFixed(2)} (${
@@ -87,7 +117,13 @@ ${allEntries
   )
   .join("\n")}
 
-Please provide insights on spending patterns, warnings if over budget, and savings recommendations.
+Please provide:
+1. Analysis of TODAY'S spending only
+2. Category breakdown for THIS DAY
+3. Warning if over daily budget
+4. Recommendations for tomorrow
+
+DO NOT include weekly totals or data from other days.
 `;
 
     try {
