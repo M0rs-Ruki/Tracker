@@ -80,7 +80,7 @@ export function PageCanvas({ page }: PageCanvasProps) {
 
   const [title, setTitle] = useState(page.title);
   const [expandedDays, setExpandedDays] = useState<Record<number, boolean>>(
-    Object.fromEntries(page.days.map((d) => [d.dayIndex, true]))
+    Object.fromEntries(page.days.map((d) => [d.dayIndex, false]))
   );
   const [entryExpanded, setEntryExpanded] = useState<Record<string, boolean>>(
     {}
@@ -465,6 +465,52 @@ export function PageCanvas({ page }: PageCanvasProps) {
                 }
                 placeholder="e.g., essential, weekly"
               />
+              {/* Quick Tag Chips */}
+              <div className="mt-2 overflow-x-auto">
+                <div className="flex gap-2 flex-nowrap sm:flex-wrap pr-1">
+                  {[
+                    "essential",
+                    "daily",
+                    "weekly",
+                    "monthly",
+                    "justfun",
+                    "urgent",
+                    "optional",
+                  ].map((tag) => {
+                    const tagsArr = entryForm.tags
+                      .split(",")
+                      .map((t) => t.trim())
+                      .filter((t) => t.length > 0);
+                    const isActive = tagsArr.includes(tag);
+                    return (
+                      <button
+                        key={tag}
+                        type="button"
+                        className={cn(
+                          "px-3 py-2 text-sm sm:px-2 sm:py-1 sm:text-xs rounded border shrink-0",
+                          isActive
+                            ? "bg-black text-white dark:bg-white dark:text-black border-black dark:border-white"
+                            : "bg-neutral-50 dark:bg-neutral-900 text-black dark:text-white border-neutral-200 dark:border-neutral-800"
+                        )}
+                        onClick={() => {
+                          let next = tagsArr;
+                          if (isActive) {
+                            next = next.filter((t) => t !== tag);
+                          } else {
+                            next = [...next, tag];
+                          }
+                          setEntryForm({
+                            ...entryForm,
+                            tags: next.join(", "),
+                          });
+                        }}
+                      >
+                        {tag}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
           <DialogFooter>
