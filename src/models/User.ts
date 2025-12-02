@@ -20,6 +20,10 @@ export interface ISettings {
   currency?: string;
 }
 
+export interface IEmailSettings {
+  weeklyReportsEnabled: boolean;
+}
+
 export interface IUser extends Document {
   _id: mongoose.Types.ObjectId;
   name: string;
@@ -27,6 +31,7 @@ export interface IUser extends Document {
   image?: string;
   aiKeys: IAIKeys;
   settings: ISettings;
+  emailSettings: IEmailSettings;
   onboardingCompleted: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -58,6 +63,13 @@ const SettingsSchema = new Schema<ISettings>(
   { _id: false }
 );
 
+const EmailSettingsSchema = new Schema<IEmailSettings>(
+  {
+    weeklyReportsEnabled: { type: Boolean, default: false },
+  },
+  { _id: false }
+);
+
 const UserSchema = new Schema<IUser>(
   {
     name: { type: String, required: true },
@@ -65,6 +77,7 @@ const UserSchema = new Schema<IUser>(
     image: { type: String },
     aiKeys: { type: AIKeysSchema, default: {} },
     settings: { type: SettingsSchema, default: {} },
+    emailSettings: { type: EmailSettingsSchema, default: {} },
     onboardingCompleted: { type: Boolean, default: false },
   },
   {

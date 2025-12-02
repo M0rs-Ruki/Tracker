@@ -19,7 +19,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, X, Save, Key } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Plus, X, Save, Key, Mail } from "lucide-react";
 
 interface SettingsDialogProps {
   open: boolean;
@@ -53,6 +54,10 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
     huggingface: false,
   });
 
+  const [emailSettings, setEmailSettings] = useState({
+    weeklyReportsEnabled: false,
+  });
+
   const [newExpense, setNewExpense] = useState({ title: "", amount: "" });
 
   // Track if user data has been loaded into form (by user email to handle user changes)
@@ -73,6 +78,9 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
         currency: user.settings?.currency || "₹",
         fixedExpenses: user.settings?.fixedExpenses || [],
         preferredAIProvider: user.settings?.preferredAIProvider || "openai",
+      });
+      setEmailSettings({
+        weeklyReportsEnabled: user.emailSettings?.weeklyReportsEnabled || false,
       });
       initializedForUser.current = user.email || null;
     }
@@ -264,6 +272,34 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
     }
   };
 
+  const handleSaveEmailSettings = async () => {
+    setIsSaving(true);
+    try {
+      const payload = {
+        emailSettings: {
+          weeklyReportsEnabled: emailSettings.weeklyReportsEnabled,
+        },
+      };
+
+      const resp = await fetch("/api/user", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const json = await resp.json();
+      if (!resp.ok)
+        throw new Error(json?.error || "Failed to save email settings");
+
+      await fetchUser();
+      alert("Email settings saved successfully!");
+    } catch (error) {
+      console.error("Error saving email settings:", error);
+      alert("Failed to save email settings");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
@@ -275,16 +311,11 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
         </DialogHeader>
 
         <Tabs defaultValue="general">
-          <TabsList className="w-full">
-            <TabsTrigger value="general" className="flex-1">
-              General
-            </TabsTrigger>
-            <TabsTrigger value="budget" className="flex-1">
-              Budget
-            </TabsTrigger>
-            <TabsTrigger value="ai" className="flex-1">
-              AI Keys
-            </TabsTrigger>
+          <TabsList className="w-full grid grid-cols-4">
+            <TabsTrigger value="general">General</TabsTrigger>
+            <TabsTrigger value="budget">Budget</TabsTrigger>
+            <TabsTrigger value="ai">AI Keys</TabsTrigger>
+            <TabsTrigger value="email">Email</TabsTrigger>
           </TabsList>
 
           {/* General Tab */}
@@ -529,6 +560,58 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
             <Button onClick={handleSaveAIKeys} disabled={isSaving}>
               <Key className="mr-2 h-4 w-4" />
               {isSaving ? "Saving..." : "Save API Keys"}
+            </Button>
+          </TabsContent>
+
+          {/* Email Tab */}
+          <TabsContent value="email" className="space-y-4 mt-4">
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+              Enable weekly email reports with AI-powered budget analysis.
+              Emails are sent every Sunday at 23:59.
+            </p>
+
+            <div className="flex items-center justify-between p-4 rounded-lg border border-neutral-200 dark:border-neutral-800">
+              <div className="flex-1">
+                <Label
+                  htmlFor="email-reports"
+                  className="text-base font-medium"
+                >
+                  Weekly Email Reports
+                </Label>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                  Receive AI-powered spending summaries every week
+                </p>
+              </div>
+              <Switch
+                id="email-reports"
+                checked={emailSettings.weeklyReportsEnabled}
+                onCheckedChange={(checked) =>
+                  setEmailSettings({
+                    ...emailSettings,
+                    weeklyReportsEnabled: checked,
+                  })
+                }
+              />
+            </div>
+
+            <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800">
+              <p className="text-sm text-blue-900 dark:text-blue-100">
+                <strong>About Weekly Reports:</strong>
+              </p>
+              <ul className="text-xs text-blue-800 dark:text-blue-200 mt-2 space-y-1 ml-4 list-disc">
+                <li>Includes budget overview and spending analysis</li>
+                <li>AI-generated insights and recommendations</li>
+                <li>
+                  Sent to your account email: <strong>{user?.email}</strong>
+                </li>
+                <li>Scheduled every Sunday at 23:59</li>
+                <li>Mail server configured in environment variables</li>
+              </ul>
+            </div>
+
+            <Button onClick={handleSaveEmailSettings} disabled={isSaving}>
+              <Mail className="mr-2 h-4 w-4" />
+              {isSaving ? "Saving..." : "Save Email Settings"}
             </Button>
           </TabsContent>
         </Tabs>

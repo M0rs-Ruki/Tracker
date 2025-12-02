@@ -107,6 +107,13 @@ export async function PATCH(request: NextRequest) {
       }
     }
 
+    // Handle email settings
+    if (body.emailSettings) {
+      console.log("Email settings received in PATCH");
+      updateData["emailSettings.weeklyReportsEnabled"] =
+        body.emailSettings.weeklyReportsEnabled ?? false;
+    }
+
     const user = await User.findOneAndUpdate(
       { email: session.user.email },
       { $set: updateData },
