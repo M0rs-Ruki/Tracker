@@ -38,15 +38,18 @@ export default function RootLayout({
         <Script id="theme-init" strategy="beforeInteractive">
           {`(function(){
             try {
-              var saved = localStorage.getItem('theme');
-              var theme = saved || 'dark';
+              var saved = localStorage.getItem('next-themes');
+              var theme = saved ? JSON.parse(saved).theme : 'dark';
               var html = document.documentElement;
               if (theme === 'dark') {
                 html.classList.add('dark');
               } else {
                 html.classList.remove('dark');
               }
-            } catch (e) {}
+            } catch (e) {
+              // Fallback to dark if parsing fails
+              document.documentElement.classList.add('dark');
+            }
           })();`}
         </Script>
       </head>

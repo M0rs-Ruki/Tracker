@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Tailwind v4 dark mode variant */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ========================================
    GLOBAL CSS - Black/White/Grayscale Only
    Notion-style minimal design

@@ -253,7 +253,7 @@ export function Sidebar({ onPageSelect, onSettingsOpen }: SidebarProps) {
   };
 
   const sidebarContent = (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-white dark:bg-black">
       {/* User Profile Section */}
       <div className="p-4 border-b border-neutral-200 dark:border-neutral-800">
         <div className="flex items-center justify-between">

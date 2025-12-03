@@ -81,7 +81,7 @@ export function SummaryDrawer() {
 
       {/* Drawer */}
       <div className="absolute right-0 top-0 h-full w-full md:max-w-md bg-white dark:bg-black shadow-xl overflow-y-auto animate-in slide-in-from-right duration-200">
-        <div className="p-4 md:p-6">
+        <div className="p-4 md:p-6 bg-white dark:bg-black">
           {/* Header */}
           <div className="flex items-center justify-between mb-4 md:mb-6">
             <div className="flex items-center gap-2">
@@ -271,7 +271,7 @@ function SummaryCard({
           <span className="text-sm text-neutral-600 dark:text-neutral-400">
             Total Spent
           </span>
-          <span className="font-semibold">
+          <span className="font-semibold text-black dark:text-white">
             {formatCurrency(totalSpent, currency)}
           </span>
         </div>
