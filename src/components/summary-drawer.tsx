@@ -267,7 +267,7 @@ function SummaryCard({
       </CardHeader>
       <CardContent className="space-y-3">
         {/* Total */}
-        <div className="flex items-center justify-between p-2 rounded-lg bg-neutral-100 dark:bg-neutral-900">
+        <div className="flex items-center justify-between p-2 rounded-lg bg-neutral-50 dark:bg-neutral-900">
           <span className="text-sm text-neutral-600 dark:text-neutral-400">
             Total Spent
           </span>
@@ -277,7 +277,7 @@ function SummaryCard({
         </div>
 
         {/* Summary */}
-        <p className="text-sm text-neutral-700 dark:text-neutral-300">
+        <p className="text-sm text-neutral-600 dark:text-neutral-300">
           {summary}
         </p>
 

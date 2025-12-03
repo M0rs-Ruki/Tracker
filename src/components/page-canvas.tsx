@@ -452,7 +452,7 @@ export function PageCanvas({ page }: PageCanvasProps) {
                   {filteredCategories.map((category) => (
                     <div
                       key={category}
-                      className="px-3 py-2 text-sm cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-900 text-black dark:text-white"
+                      className="px-3 py-2 text-sm cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-900 text-black dark:text-white"
                       onMouseDown={(e) => {
                         e.preventDefault();
                         setEntryForm({ ...entryForm, category });
@@ -738,7 +738,7 @@ function EntryCard({
               </h4>
 
               {entry.category && (
-                <span className="px-1.5 md:px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-xs shrink-0">
+                <span className="px-1.5 md:px-2 py-0.5 rounded-full bg-neutral-50 dark:bg-neutral-800 text-xs shrink-0">
                   {entry.category}
                 </span>
               )}

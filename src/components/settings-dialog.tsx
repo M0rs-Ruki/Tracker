@@ -640,7 +640,7 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
             </div>
 
             <div
-              className="p-3 rounded-lg border bg-neutral-100 dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700"
+              className="p-3 rounded-lg border bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700"
             >
               <p className="text-sm text-black dark:text-white">
                 <strong>About Weekly Reports:</strong>

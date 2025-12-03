@@ -11,11 +11,11 @@ const buttonVariants = cva(
         default:
           "bg-black text-white border border-black hover:opacity-90 dark:bg-white dark:text-black dark:border-white",
         secondary:
-          "bg-neutral-100 text-black border border-transparent hover:bg-neutral-200 dark:bg-neutral-900 dark:text-white dark:hover:bg-neutral-800",
+          "bg-neutral-50 text-black border border-transparent hover:bg-neutral-100 dark:bg-neutral-900 dark:text-white dark:hover:bg-neutral-800",
         outline:
-          "border border-neutral-300 bg-white text-black hover:bg-neutral-50 dark:border-neutral-700 dark:bg-black dark:text-white dark:hover:bg-neutral-900",
+          "border border-neutral-200 bg-white text-black hover:bg-neutral-50 dark:border-neutral-700 dark:bg-black dark:text-white dark:hover:bg-neutral-900",
         ghost:
-          "bg-transparent text-black hover:bg-neutral-100 dark:text-white dark:hover:bg-neutral-900",
+          "bg-transparent text-black hover:bg-neutral-50 dark:text-white dark:hover:bg-neutral-900",
         link: "text-black underline-offset-4 hover:underline dark:text-white",
       },
       size: {

@@ -21,7 +21,7 @@ const DropdownMenuSubTrigger = React.forwardRef<
   <DropdownMenuPrimitive.SubTrigger
     ref={ref}
     className={cn(
-      "flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-neutral-100 data-[state=open]:bg-neutral-100 dark:focus:bg-neutral-900 dark:data-[state=open]:bg-neutral-900",
+      "flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-neutral-50 data-[state=open]:bg-neutral-50 dark:focus:bg-neutral-900 dark:data-[state=open]:bg-neutral-900",
       inset && "pl-8",
       className
     )}
@@ -78,7 +78,7 @@ const DropdownMenuItem = React.forwardRef<
   <DropdownMenuPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-neutral-100 focus:text-black data-[disabled]:pointer-events-none data-[disabled]:opacity-50 dark:focus:bg-neutral-900 dark:focus:text-white",
+      "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-neutral-50 focus:text-black data-[disabled]:pointer-events-none data-[disabled]:opacity-50 dark:focus:bg-neutral-900 dark:focus:text-white",
       inset && "pl-8",
       className
     )}
@@ -158,7 +158,7 @@ const DropdownMenuSeparator = React.forwardRef<
   <DropdownMenuPrimitive.Separator
     ref={ref}
     className={cn(
-      "-mx-1 my-1 h-px bg-neutral-200 dark:bg-neutral-800",
+      "-mx-1 my-1 h-px bg-neutral-100 dark:bg-neutral-800",
       className
     )}
     {...props}

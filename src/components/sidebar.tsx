@@ -265,7 +265,7 @@ export function Sidebar({ onPageSelect, onSettingsOpen }: SidebarProps) {
                 className="w-8 h-8 rounded-full"
               />
             ) : (
-              <div className="w-8 h-8 rounded-full bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
                 <User className="w-4 h-4 text-black dark:text-white" />
               </div>
             )}
@@ -576,14 +576,14 @@ function FolderItem({
     <div ref={setNodeRef} style={style} {...attributes}>
       <div
         className={cn(
-          "group flex items-center gap-1 px-2 py-1 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-900 cursor-pointer transition-colors",
+          "group flex items-center gap-1 px-2 py-1 rounded-md hover:bg-neutral-50 dark:hover:bg-neutral-900 cursor-pointer transition-colors",
           isDragging && "opacity-50"
         )}
         style={{ paddingLeft: `${level * 12 + 8}px` }}
       >
         <button
           onClick={onToggle}
-          className="p-0.5 hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded"
+          className="p-0.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded"
         >
           {folder.isExpanded ? (
             <ChevronDown className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
@@ -708,8 +708,8 @@ function PageItem({
         className={cn(
           "group flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors",
           isSelected
-            ? "bg-neutral-200 dark:bg-neutral-800"
-            : "hover:bg-neutral-100 dark:hover:bg-neutral-900",
+            ? "bg-neutral-100 dark:bg-neutral-800"
+            : "hover:bg-neutral-50 dark:hover:bg-neutral-900",
           isDragging && "opacity-50"
         )}
         style={{ paddingLeft: `${level * 12 + 28}px` }}
