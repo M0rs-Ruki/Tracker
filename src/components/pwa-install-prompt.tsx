@@ -3,23 +3,14 @@
 import { useEffect, useState } from "react";
 import { X, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
-}
+import { usePWAInstall } from "@/hooks/use-pwa-install";
 
 export function PWAInstallPrompt() {
-  const [deferredPrompt, setDeferredPrompt] =
-    useState<BeforeInstallPromptEvent | null>(null);
+  const { canInstall, isInstalled, install } = usePWAInstall();
   const [showPrompt, setShowPrompt] = useState(false);
 
   useEffect(() => {
-    // Check if already installed
-    if (
-      typeof window !== "undefined" &&
-      window.matchMedia("(display-mode: standalone)").matches
-    ) {
+    if (isInstalled || !canInstall) {
       return;
     }
 
@@ -35,28 +26,14 @@ export function PWAInstallPrompt() {
       }
     }
 
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
-      // Show prompt after 2 seconds for better UX
-      setTimeout(() => setShowPrompt(true), 2000);
-    };
-
-    window.addEventListener("beforeinstallprompt", handler);
-
-    return () => {
-      window.removeEventListener("beforeinstallprompt", handler);
-    };
-  }, []);
+    // Show prompt after 2 seconds for better UX
+    const timer = setTimeout(() => setShowPrompt(true), 2000);
+    return () => clearTimeout(timer);
+  }, [canInstall, isInstalled]);
 
   const handleInstall = async () => {
-    if (!deferredPrompt) return;
-
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-
-    if (outcome === "accepted") {
-      setDeferredPrompt(null);
+    const success = await install();
+    if (success) {
       setShowPrompt(false);
     }
   };

@@ -20,7 +20,8 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-import { Plus, X, Save, Key, Mail } from "lucide-react";
+import { Plus, X, Save, Key, Mail, Download } from "lucide-react";
+import { usePWAInstall } from "@/hooks/use-pwa-install";
 
 interface SettingsDialogProps {
   open: boolean;
@@ -29,6 +30,7 @@ interface SettingsDialogProps {
 
 export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   const { user, updateUser, fetchUser } = useStore();
+  const { canInstall, isInstalled, install } = usePWAInstall();
   const [isSaving, setIsSaving] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -300,6 +302,13 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
     }
   };
 
+  const handlePWAInstall = async () => {
+    const success = await install();
+    if (success) {
+      alert("App installed successfully! Check your home screen.");
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
@@ -371,6 +380,32 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* PWA Install */}
+            <div className="border-t border-neutral-200 dark:border-neutral-800 pt-4">
+              <Label>Install App</Label>
+              <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1 mb-3">
+                {isInstalled
+                  ? "App is already installed on your device"
+                  : canInstall
+                  ? "Install this app on your device for offline access and better performance"
+                  : "Installation is not available on this device/browser"}
+              </p>
+              <Button
+                onClick={handlePWAInstall}
+                disabled={!canInstall || isInstalled}
+                variant="outline"
+                className="w-full"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                {isInstalled
+                  ? "App Installed ✓"
+                  : canInstall
+                  ? "Install App"
+                  : "Not Available"}
+              </Button>
+            </div>
+
             <Button onClick={handleSaveGeneral} disabled={isSaving}>
               <Save className="mr-2 h-4 w-4" />
               {isSaving ? "Saving..." : "Save Changes"}
