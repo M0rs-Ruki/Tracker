@@ -99,6 +99,25 @@ Daily Budget Target: ${user.settings.currency || "₹"}${(
       30
     ).toFixed(2)}
 
+Fixed Monthly Budgets/Expenses:
+${
+  user.settings.fixedExpenses && user.settings.fixedExpenses.length > 0
+    ? user.settings.fixedExpenses
+        .map(
+          (budget) =>
+            `- **${budget.title}**: ${
+              user.settings.currency || "₹"
+            }${budget.amount.toFixed(2)}
+  Description: ${budget.description || "N/A"}
+  Category: ${budget.category || "N/A"}
+  Tags: ${
+    budget.tags && budget.tags.length > 0 ? budget.tags.join(", ") : "None"
+  }`
+        )
+        .join("\n")
+    : "No fixed budgets set"
+}
+
 Spending by Category (Today Only):
 ${Object.entries(entriesByCategory)
   .map(
@@ -120,8 +139,9 @@ ${allEntries
 Please provide:
 1. Analysis of TODAY'S spending only
 2. Category breakdown for THIS DAY
-3. Warning if over daily budget
-4. Recommendations for tomorrow
+3. Compare spending against fixed budgets (by category and tags)
+4. Warning if over daily budget or approaching any budget limits
+5. Recommendations for tomorrow based on budget descriptions
 
 DO NOT include weekly totals or data from other days.
 `;

@@ -3,6 +3,9 @@ import mongoose, { Schema, Document, Model } from "mongoose";
 export interface IFixedExpense {
   title: string;
   amount: number;
+  description?: string;
+  category?: string;
+  tags?: string[];
 }
 
 export interface IAIKeys {
@@ -40,6 +43,9 @@ export interface IUser extends Document {
 const FixedExpenseSchema = new Schema<IFixedExpense>({
   title: { type: String, required: true },
   amount: { type: Number, required: true },
+  description: { type: String },
+  category: { type: String },
+  tags: { type: [String], default: [] },
 });
 
 const AIKeysSchema = new Schema<IAIKeys>(

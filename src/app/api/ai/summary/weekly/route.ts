@@ -88,9 +88,28 @@ Monthly Budget: ${
 Weekly Budget (Monthly/4): ${user.settings.currency || "₹"}${(
       user.settings.monthlyBudget / 4
     ).toFixed(2)}
-Fixed Monthly Expenses: ${
+Fixed Monthly Expenses Total: ${
       user.settings.currency || "₹"
     }${fixedExpensesTotal.toFixed(2)}
+
+Fixed Monthly Budgets/Expenses (Detailed):
+${
+  user.settings.fixedExpenses && user.settings.fixedExpenses.length > 0
+    ? user.settings.fixedExpenses
+        .map(
+          (budget) =>
+            `- **${budget.title}**: ${
+              user.settings.currency || "₹"
+            }${budget.amount.toFixed(2)}
+  Description: ${budget.description || "N/A"}
+  Category: ${budget.category || "N/A"}
+  Tags: ${
+    budget.tags && budget.tags.length > 0 ? budget.tags.join(", ") : "None"
+  }`
+        )
+        .join("\n")
+    : "No fixed budgets set"
+}
 
 Spending by Day:
 ${Object.entries(entriesByDay)
@@ -120,9 +139,10 @@ Number of Transactions: ${allEntries.length}
 Please provide a comprehensive weekly analysis with:
 1. Overall spending assessment
 2. Pattern recognition across days
-3. Category-wise insights
-4. Budget warnings if applicable
-5. Specific savings recommendations
+3. Category-wise insights comparing actual spending vs fixed budgets
+4. Budget warnings if applicable (check against budget categories and tags)
+5. Specific savings recommendations based on budget descriptions
+6. Analysis of which budget categories are on track or exceeded
 `;
 
     try {
