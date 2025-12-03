@@ -1,0 +1,10 @@
+# This file indicates where app icons should be placed
+# You need to add:
+# - icon-192.png (192x192 pixels)
+# - icon-512.png (512x512 pixels)
+# 
+# You can generate these from your logo/icon using online tools like:
+# - https://realfavicongenerator.net/
+# - https://favicon.io/
+# 
+# For now, the app will work without these, but icons are recommended for a better install experience.
