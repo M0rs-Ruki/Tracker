@@ -285,7 +285,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
                     </div>
                   ))}
                   {formData.fixedExpenses.length === 0 && (
-                    <p className="text-center text-neutral-500 py-4 text-sm">
+                    <p className="text-center text-neutral-500 dark:text-neutral-400 py-4 text-sm">
                       No fixed expenses added yet
                     </p>
                   )}
@@ -344,7 +344,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
                     placeholder="Enter your API key"
                     className="mt-2"
                   />
-                  <p className="text-xs text-neutral-500 mt-1">
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                     Your API key is encrypted and stored securely.
                   </p>
                 </div>

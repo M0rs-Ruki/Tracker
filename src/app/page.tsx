@@ -18,7 +18,10 @@ export default function Home() {
   }, [status, router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
+    <div
+      className="min-h-screen flex items-center justify-center"
+      style={{ background: "var(--background)", color: "var(--text-primary)" }}
+    >
       <div className="text-center">
         <Spinner size="lg" className="mx-auto mb-4" />
         <p className="text-neutral-500 dark:text-neutral-400">Loading...</p>

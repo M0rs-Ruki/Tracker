@@ -85,8 +85,8 @@ export function SummaryDrawer() {
           {/* Header */}
           <div className="flex items-center justify-between mb-4 md:mb-6">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-neutral-500" />
-              <h2 className="text-lg md:text-xl font-bold">AI Summaries</h2>
+              <Sparkles className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
+              <h2 className="text-lg md:text-xl font-bold text-black dark:text-white">AI Summaries</h2>
             </div>
             <Button
               variant="ghost"
@@ -99,7 +99,7 @@ export function SummaryDrawer() {
 
           {/* Provider Selection */}
           <div className="mb-6">
-            <label className="text-sm font-medium mb-2 block">
+            <label className="text-sm font-medium mb-2 block text-black dark:text-white">
               AI Provider
             </label>
             <Select
@@ -258,11 +258,11 @@ function SummaryCard({
     <Card>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-neutral-500" />
+          <CardTitle className="text-sm font-medium flex items-center gap-2 text-black dark:text-white">
+            <Calendar className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
             {type === "daily" ? "Daily" : "Weekly"} Summary
           </CardTitle>
-          <span className="text-xs text-neutral-500">{date}</span>
+          <span className="text-xs text-neutral-500 dark:text-neutral-400">{date}</span>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -284,7 +284,7 @@ function SummaryCard({
         {/* Insights */}
         {insights && insights.length > 0 && (
           <div>
-            <div className="flex items-center gap-1 text-sm font-medium mb-1">
+            <div className="flex items-center gap-1 text-sm font-medium mb-1 text-black dark:text-white">
               <TrendingUp className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
               Insights
             </div>
@@ -302,7 +302,7 @@ function SummaryCard({
         {/* Recommendations */}
         {recommendations && recommendations.length > 0 && (
           <div>
-            <div className="flex items-center gap-1 text-sm font-medium mb-1">
+            <div className="flex items-center gap-1 text-sm font-medium mb-1 text-black dark:text-white">
               <Lightbulb className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
               Recommendations
             </div>

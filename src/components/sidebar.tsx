@@ -266,7 +266,7 @@ export function Sidebar({ onPageSelect, onSettingsOpen }: SidebarProps) {
               />
             ) : (
               <div className="w-8 h-8 rounded-full bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center">
-                <User className="w-4 h-4" />
+                <User className="w-4 h-4 text-black dark:text-white" />
               </div>
             )}
             <div className="flex-1 min-w-0">
@@ -346,7 +346,7 @@ export function Sidebar({ onPageSelect, onSettingsOpen }: SidebarProps) {
       <div className="flex-1 overflow-y-auto p-2">
         {isLoadingFolders || isLoadingPages ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-5 w-5 animate-spin text-neutral-500" />
+            <Loader2 className="h-5 w-5 animate-spin text-neutral-500 dark:text-neutral-400" />
           </div>
         ) : (
           <>
@@ -460,7 +460,7 @@ export function Sidebar({ onPageSelect, onSettingsOpen }: SidebarProps) {
               className="absolute inset-0 bg-black/50"
               onClick={() => setSidebarOpen(false)}
             />
-            <div className="absolute left-0 top-0 h-full w-[80%] max-w-[360px] bg-white dark:bg-black border-r border-neutral-200 dark:border-neutral-800 animate-in slide-in-from-left duration-200 px-2">
+            <div className="absolute left-0 top-0 h-full w-[80%] max-w-[360px] bg-white dark:bg-black border-r border-neutral-200 dark:border-neutral-800 animate-in slide-in-from-left duration-200 px-2" style={{ background: "var(--background)", borderColor: "var(--border)" }}>
               <Button
                 variant="ghost"
                 size="icon"
@@ -483,7 +483,7 @@ export function Sidebar({ onPageSelect, onSettingsOpen }: SidebarProps) {
   return (
     <div
       className={cn(
-        "h-full bg-neutral-50 dark:bg-neutral-950 border-r border-neutral-200 dark:border-neutral-800 transition-all duration-300 hidden md:block",
+        "h-full bg-white dark:bg-black border-r border-neutral-200 dark:border-neutral-800 transition-all duration-300 hidden md:block",
         sidebarOpen ? "w-72" : "w-0 overflow-hidden"
       )}
     >
@@ -586,13 +586,13 @@ function FolderItem({
           className="p-0.5 hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded"
         >
           {folder.isExpanded ? (
-            <ChevronDown className="h-4 w-4 text-neutral-500" />
+            <ChevronDown className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
           ) : (
-            <ChevronRight className="h-4 w-4 text-neutral-500" />
+            <ChevronRight className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
           )}
         </button>
         <div className="flex items-center gap-2 flex-1 min-w-0" {...listeners}>
-          <FolderIcon className="h-4 w-4 text-neutral-500 shrink-0" />
+          <FolderIcon className="h-4 w-4 text-neutral-500 dark:text-neutral-400 shrink-0" />
           <span className="text-sm truncate text-black dark:text-white">
             {folder.name}
           </span>

@@ -301,8 +301,8 @@ export function PageCanvas({ page }: PageCanvasProps) {
 
         {/* Budget Summary */}
         {user?.settings?.monthlyBudget && (
-          <div className="mt-6 md:mt-8 p-3 md:p-4 rounded-lg bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
-            <h3 className="font-semibold mb-2 text-sm md:text-base">
+          <div className="mt-6 md:mt-8 p-3 md:p-4 rounded-lg bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 shadow-sm">
+            <h3 className="font-semibold mb-2 text-sm md:text-base text-black dark:text-white">
               Budget Overview
             </h3>
             {(() => {
@@ -317,7 +317,7 @@ export function PageCanvas({ page }: PageCanvasProps) {
               return (
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6 md:gap-4 text-xs md:text-sm">
                   <div>
-                    <p className="text-neutral-500 dark:text-neutral-400">
+                    <p className="text-neutral-700 dark:text-neutral-300">
                       Page Total
                     </p>
                     <p className="font-medium text-black dark:text-white">
@@ -325,7 +325,7 @@ export function PageCanvas({ page }: PageCanvasProps) {
                     </p>
                   </div>
                   <div>
-                    <p className="text-neutral-500 dark:text-neutral-400">
+                    <p className="text-neutral-700 dark:text-neutral-300">
                       Monthly Budget
                     </p>
                     <p className="font-medium text-black dark:text-white">
@@ -333,7 +333,7 @@ export function PageCanvas({ page }: PageCanvasProps) {
                     </p>
                   </div>
                   <div>
-                    <p className="text-neutral-500 dark:text-neutral-400">
+                    <p className="text-neutral-700 dark:text-neutral-300">
                       Fixed Expenses
                     </p>
                     <p className="font-medium text-black dark:text-white">
@@ -341,7 +341,7 @@ export function PageCanvas({ page }: PageCanvasProps) {
                     </p>
                   </div>
                   <div>
-                    <p className="text-neutral-500 dark:text-neutral-400">
+                    <p className="text-neutral-700 dark:text-neutral-300">
                       Real Monthly Budget
                     </p>
                     <p className="font-medium text-black dark:text-white">
@@ -349,7 +349,7 @@ export function PageCanvas({ page }: PageCanvasProps) {
                     </p>
                   </div>
                   <div>
-                    <p className="text-neutral-500 dark:text-neutral-400">
+                    <p className="text-neutral-700 dark:text-neutral-300">
                       Weekly Budget
                     </p>
                     <p className="font-medium text-black dark:text-white">
@@ -357,7 +357,7 @@ export function PageCanvas({ page }: PageCanvasProps) {
                     </p>
                   </div>
                   <div>
-                    <p className="text-neutral-500 dark:text-neutral-400">
+                    <p className="text-neutral-700 dark:text-neutral-300">
                       Status
                     </p>
                     <p className="font-medium text-black dark:text-white">
@@ -592,9 +592,9 @@ function DaySection({
       >
         <div className="flex items-center gap-1.5 md:gap-2 min-w-0">
           {isExpanded ? (
-            <ChevronDown className="h-4 w-4 text-neutral-500 shrink-0" />
+            <ChevronDown className="h-4 w-4 text-neutral-500 dark:text-neutral-400 shrink-0" />
           ) : (
-            <ChevronRight className="h-4 w-4 text-neutral-500 shrink-0" />
+            <ChevronRight className="h-4 w-4 text-neutral-500 dark:text-neutral-400 shrink-0" />
           )}
           <h3 className="font-semibold text-sm md:text-base text-black dark:text-white truncate">
             {getDayName(day.dayIndex)}
@@ -724,7 +724,7 @@ function EntryCard({
       >
         <div
           {...listeners}
-          className="cursor-grab active:cursor-grabbing text-neutral-400 hover:text-neutral-600 hidden sm:block"
+          className="cursor-grab active:cursor-grabbing text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 hidden sm:block"
           onClick={(e) => e.stopPropagation()}
         >
           <GripVertical className="h-4 w-4" />
@@ -802,7 +802,7 @@ function EntryCard({
 
           {entry.tags && entry.tags.length > 0 && (
             <div className="flex items-center gap-1 mt-2 flex-wrap">
-              <Tag className="h-3 w-3 text-neutral-400" />
+              <Tag className="h-3 w-3 text-neutral-400 dark:text-neutral-500" />
               {entry.tags.map((tag, i) => (
                 <span
                   key={i}

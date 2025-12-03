@@ -314,6 +314,11 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
       <DialogContent
         className="w-[95vw] sm:w-auto sm:max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6"
         aria-describedby={undefined}
+        style={{
+          background: "var(--background)",
+          color: "var(--text-primary)",
+          borderColor: "var(--border)",
+        }}
       >
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
@@ -382,7 +387,10 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
             </div>
 
             {/* PWA Install */}
-            <div className="border-t border-neutral-200 dark:border-neutral-800 pt-4">
+            <div
+              className="border-t pt-4"
+              style={{ borderColor: "var(--border)" }}
+            >
               <Label>Install App</Label>
               <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1 mb-3">
                 {isInstalled
@@ -462,20 +470,27 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
 
               <div className="space-y-2 mt-3 max-h-48 overflow-y-auto">
                 {formData.fixedExpenses.length === 0 ? (
-                  <div className="text-center py-4 text-neutral-500 dark:text-neutral-400 text-sm">
+                  <div
+                    className="text-center py-4 text-sm"
+                    style={{ color: "var(--text-muted)" }}
+                  >
                     No fixed expenses added yet
                   </div>
                 ) : (
                   formData.fixedExpenses.map((expense, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-3 rounded-lg bg-neutral-100 dark:bg-neutral-900"
+                      className="flex items-center justify-between p-3 rounded-lg"
+                      style={{ background: "var(--background-secondary)" }}
                     >
-                      <span className="text-black dark:text-white">
+                      <span style={{ color: "var(--text-primary)" }}>
                         {expense.title}
                       </span>
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-black dark:text-white">
+                        <span
+                          className="font-medium"
+                          style={{ color: "var(--text-primary)" }}
+                        >
                           {formData.currency}
                           {expense.amount}
                         </span>
@@ -502,7 +517,7 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
 
           {/* AI Keys Tab */}
           <TabsContent value="ai" className="space-y-4 mt-4">
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+            <p className="text-sm" style={{ color: "var(--text-muted)" }}>
               Enter your API keys for AI providers. Keys are encrypted before
               storage.
             </p>
@@ -605,7 +620,10 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               Emails are sent every Sunday at 23:59.
             </p>
 
-            <div className="flex items-center justify-between p-4 rounded-lg border border-neutral-200 dark:border-neutral-800">
+            <div
+              className="flex items-center justify-between p-4 rounded-lg border"
+              style={{ borderColor: "var(--border)" }}
+            >
               <div className="flex-1">
                 <Label
                   htmlFor="email-reports"
@@ -613,7 +631,10 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
                 >
                   Weekly Email Reports
                 </Label>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                <p
+                  className="text-xs mt-1"
+                  style={{ color: "var(--text-muted)" }}
+                >
                   Receive AI-powered spending summaries every week
                 </p>
               </div>
@@ -629,11 +650,20 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               />
             </div>
 
-            <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800">
-              <p className="text-sm text-blue-900 dark:text-blue-100">
+            <div
+              className="p-3 rounded-lg border"
+              style={{
+                background: "var(--background-tertiary)",
+                borderColor: "var(--border-strong)",
+              }}
+            >
+              <p className="text-sm" style={{ color: "var(--foreground)" }}>
                 <strong>About Weekly Reports:</strong>
               </p>
-              <ul className="text-xs text-blue-800 dark:text-blue-200 mt-2 space-y-1 ml-4 list-disc">
+              <ul
+                className="text-xs mt-2 space-y-1 ml-4 list-disc"
+                style={{ color: "var(--text-secondary)" }}
+              >
                 <li>Includes budget overview and spending analysis</li>
                 <li>AI-generated insights and recommendations</li>
                 <li>

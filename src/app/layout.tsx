@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { PWAInstallPrompt } from "@/components/pwa-install-prompt";
@@ -33,7 +34,29 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} antialiased`}>
+      <head>
+        <Script id="theme-init" strategy="beforeInteractive">
+          {`(function(){
+            try {
+              var saved = localStorage.getItem('theme');
+              var theme = saved || 'dark';
+              var html = document.documentElement;
+              if (theme === 'dark') {
+                html.classList.add('dark');
+              } else {
+                html.classList.remove('dark');
+              }
+            } catch (e) {}
+          })();`}
+        </Script>
+      </head>
+      <body
+        className={`${inter.className} antialiased`}
+        style={{
+          background: "var(--background)",
+          color: "var(--text-primary)",
+        }}
+      >
         <Providers>
           {children}
           <PWAInstallPrompt />

@@ -6,15 +6,34 @@ import { Wallet } from "lucide-react";
 
 export default function SignInPage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center p-4">
+    <div
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{ background: "var(--background)", color: "var(--text-primary)" }}
+    >
       <div className="w-full max-w-md">
-        <div className="bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-xl p-8">
+        <div
+          className="border rounded-xl p-8"
+          style={{
+            background: "var(--background)",
+            color: "var(--text-primary)",
+            borderColor: "var(--border)",
+          }}
+        >
           {/* Logo */}
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-black dark:bg-white rounded-xl flex items-center justify-center mx-auto mb-4">
-              <Wallet className="h-8 w-8 text-white dark:text-black" />
+            <div
+              className="w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4"
+              style={{ background: "var(--foreground)" }}
+            >
+              <Wallet
+                className="h-8 w-8"
+                style={{ color: "var(--background)" }}
+              />
             </div>
-            <h1 className="text-2xl font-bold text-black dark:text-white">
+            <h1
+              className="text-2xl font-bold"
+              style={{ color: "var(--text-primary)" }}
+            >
               Finance Tracker
             </h1>
             <p className="text-neutral-500 dark:text-neutral-400 mt-2">

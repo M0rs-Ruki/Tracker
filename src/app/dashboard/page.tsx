@@ -72,7 +72,13 @@ export default function DashboardPage() {
   // Loading state
   if (status === "loading" || isLoadingUser) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{
+          background: "var(--background)",
+          color: "var(--text-primary)",
+        }}
+      >
         <div className="text-center">
           <Spinner size="lg" className="mx-auto mb-4" />
           <p className="text-neutral-500 dark:text-neutral-400">Loading...</p>
@@ -97,7 +103,10 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex h-screen bg-white dark:bg-black overflow-hidden">
+    <div
+      className="flex h-screen overflow-hidden"
+      style={{ background: "var(--background)", color: "var(--text-primary)" }}
+    >
       {/* Mobile Backdrop Overlay */}
       {sidebarOpen && (
         <div
@@ -106,7 +115,14 @@ export default function DashboardPage() {
         />
       )}
       {/* Mobile Header */}
-      <div className="fixed top-0 left-0 right-0 z-40 md:hidden bg-white dark:bg-black border-b border-neutral-200 dark:border-neutral-800 px-4 py-3 flex items-center justify-between">
+      <div
+        className="fixed top-0 left-0 right-0 z-40 md:hidden border-b px-4 py-3 flex items-center justify-between"
+        style={{
+          background: "var(--background)",
+          color: "var(--text-primary)",
+          borderColor: "var(--border)",
+        }}
+      >
         <Button
           variant="ghost"
           size="icon"
@@ -161,7 +177,10 @@ function EmptyState({ onOpenSidebar }: EmptyStateProps) {
       <div className="w-16 h-16 md:w-20 md:h-20 bg-neutral-100 dark:bg-neutral-900 rounded-full flex items-center justify-center mb-4 md:mb-6">
         <FileText className="h-8 w-8 md:h-10 md:w-10 text-neutral-400" />
       </div>
-      <h2 className="text-lg md:text-xl font-semibold mb-2 text-black dark:text-white">
+      <h2
+        className="text-lg md:text-xl font-semibold mb-2"
+        style={{ color: "var(--text-primary)" }}
+      >
         No page selected
       </h2>
       <p className="text-sm md:text-base text-neutral-500 dark:text-neutral-400 max-w-md mb-4">
