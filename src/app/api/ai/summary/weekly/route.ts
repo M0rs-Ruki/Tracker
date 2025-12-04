@@ -44,21 +44,28 @@ export async function POST(request: NextRequest) {
       dayIndex: number;
     }> = [];
 
-    for (const page of pages) {
-      for (const day of page.days) {
-        for (const entry of day.entries) {
-          totalSpent += entry.amount;
-          const category = entry.category || "Uncategorized";
-          entriesByCategory[category] =
-            (entriesByCategory[category] || 0) + entry.amount;
-          entriesByDay[day.dayIndex] =
-            (entriesByDay[day.dayIndex] || 0) + entry.amount;
-          allEntries.push({
-            title: entry.title,
-            amount: entry.amount,
-            category,
-            dayIndex: day.dayIndex,
-          });
+    // Only process pages if they exist
+    if (pages && pages.length > 0) {
+      for (const page of pages) {
+        if (page.days && page.days.length > 0) {
+          for (const day of page.days) {
+            if (day.entries && day.entries.length > 0) {
+              for (const entry of day.entries) {
+                totalSpent += entry.amount || 0;
+                const category = entry.category || "Uncategorized";
+                entriesByCategory[category] =
+                  (entriesByCategory[category] || 0) + (entry.amount || 0);
+                entriesByDay[day.dayIndex] =
+                  (entriesByDay[day.dayIndex] || 0) + (entry.amount || 0);
+                allEntries.push({
+                  title: entry.title || "Untitled",
+                  amount: entry.amount || 0,
+                  category,
+                  dayIndex: day.dayIndex,
+                });
+              }
+            }
+          }
         }
       }
     }
@@ -72,25 +79,50 @@ export async function POST(request: NextRequest) {
     )[0];
 
     // Calculate fixed expenses total
-    const fixedExpensesTotal = user.settings.fixedExpenses.reduce(
-      (sum, exp) => sum + exp.amount,
-      0
-    );
+    const fixedExpensesTotal =
+      user.settings?.fixedExpenses?.reduce(
+        (sum, exp) => sum + (exp.amount || 0),
+        0
+      ) || 0;
+
+    // If no spending data, return early with a message
+    if (allEntries.length === 0) {
+      return NextResponse.json({
+        userId: user._id,
+        date: weekStr,
+        type: "weekly",
+        summary:
+          "No spending data available for this week. Start tracking your expenses!",
+        totalSpent: 0,
+        insights: ["No transactions recorded this week"],
+        recommendations: [
+          "Start adding your daily expenses to track your spending",
+        ],
+      });
+    }
+
+    // Calculate available budget after fixed expenses
+    const availableMonthlyBudget =
+      user.settings.monthlyBudget - fixedExpensesTotal;
+    const weeklyBudget = availableMonthlyBudget / 4;
 
     // Build prompt for AI
     const prompt = `
 Analyze this weekly financial data:
 
 Total Spent This Week: ${user.settings.currency || "₹"}${totalSpent.toFixed(2)}
-Monthly Budget: ${
+Monthly Budget (Total): ${
       user.settings.currency || "₹"
     }${user.settings.monthlyBudget.toFixed(2)}
-Weekly Budget (Monthly/4): ${user.settings.currency || "₹"}${(
-      user.settings.monthlyBudget / 4
-    ).toFixed(2)}
 Fixed Monthly Expenses Total: ${
       user.settings.currency || "₹"
     }${fixedExpensesTotal.toFixed(2)}
+Available Monthly Budget (After Fixed Expenses): ${
+      user.settings.currency || "₹"
+    }${availableMonthlyBudget.toFixed(2)}
+Weekly Budget Target (Available Budget ÷ 4): ${
+      user.settings.currency || "₹"
+    }${weeklyBudget.toFixed(2)}
 
 Fixed Monthly Budgets/Expenses (Detailed):
 ${
@@ -157,18 +189,28 @@ Please provide a comprehensive weekly analysis with:
           type: "weekly",
           summary: aiResponse.summary,
           totalSpent,
-          insights: aiResponse.insights,
-          recommendations: aiResponse.recommendations,
+          insights: aiResponse.insights || [],
+          recommendations: aiResponse.recommendations || [],
         },
         { upsert: true, new: true }
       );
 
       return NextResponse.json(summary);
-    } catch (aiError) {
-      console.error("AI generation error:", aiError);
+    } catch (aiError: any) {
+      console.error("AI generation error for weekly summary:", {
+        error: aiError?.message || aiError,
+        provider: provider || user.settings?.preferredAIProvider,
+        hasApiKey:
+          !!user.aiKeys?.[
+            (provider as keyof typeof user.aiKeys) ||
+              (user.settings?.preferredAIProvider as keyof typeof user.aiKeys)
+          ],
+      });
 
       // Return basic summary without AI
-      const weeklyBudget = user.settings.monthlyBudget / 4;
+      const availableMonthlyBudget =
+        user.settings.monthlyBudget - fixedExpensesTotal;
+      const weeklyBudget = availableMonthlyBudget / 4;
       const isOverBudget = totalSpent > weeklyBudget;
 
       return NextResponse.json({
@@ -187,14 +229,27 @@ Please provide a comprehensive weekly analysis with:
           `Total weekly spending: ${
             user.settings.currency || "₹"
           }${totalSpent.toFixed(2)}`,
-          `Weekly budget: ${
+          `Monthly budget: ${
+            user.settings.currency || "₹"
+          }${user.settings.monthlyBudget.toFixed(2)}`,
+          `Fixed expenses: ${
+            user.settings.currency || "₹"
+          }${fixedExpensesTotal.toFixed(2)}`,
+          `Available budget: ${
+            user.settings.currency || "₹"
+          }${availableMonthlyBudget.toFixed(2)}/month`,
+          `Weekly budget target: ${
             user.settings.currency || "₹"
           }${weeklyBudget.toFixed(2)}`,
           `Highest spending day: Day ${highestSpendingDay?.[0] || "N/A"}`,
           `Top category: ${topCategory?.[0] || "N/A"}`,
         ],
         recommendations: [
-          "Set up your AI API key for detailed insights",
+          (aiError as Error)?.message?.includes("rate limit")
+            ? "⚠️ AI rate limit reached. Wait a few minutes or try a different provider"
+            : (aiError as Error)?.message?.includes("API key")
+            ? "Set up your AI API key in Settings > AI Keys for detailed insights"
+            : "AI service unavailable. Try again later or use a different provider",
           isOverBudget
             ? "Consider reducing discretionary spending next week"
             : "Keep up the good budgeting!",

@@ -52,28 +52,7 @@ export async function POST(request: NextRequest) {
     const today = new Date();
     const dateStr = today.toISOString().split("T")[0];
 
-    // Calculate total spending from ONLY this day's entries
-    let totalSpent = 0;
-    const entriesByCategory: Record<string, number> = {};
-    const allEntries: Array<{
-      title: string;
-      amount: number;
-      category: string;
-    }> = [];
-
-    for (const entry of day.entries) {
-      totalSpent += entry.amount;
-      const category = entry.category || "Uncategorized";
-      entriesByCategory[category] =
-        (entriesByCategory[category] || 0) + entry.amount;
-      allEntries.push({
-        title: entry.title,
-        amount: entry.amount,
-        category,
-      });
-    }
-
-    // Get day name
+    // Get 3 days data: current day and 2 previous days for comparison
     const dayNames = [
       "Sunday",
       "Monday",
@@ -83,21 +62,134 @@ export async function POST(request: NextRequest) {
       "Friday",
       "Saturday",
     ];
-    const dayName = dayNames[dayIndex];
+
+    const threeDaysData: Array<{
+      dayIndex: number;
+      dayName: string;
+      totalSpent: number;
+      entries: Array<{ title: string; amount: number; category: string }>;
+      entriesByCategory: Record<string, number>;
+    }> = [];
+
+    // Collect data for current day and 2 previous days
+    for (let i = 0; i < 3; i++) {
+      const targetDayIndex = (dayIndex - i + 7) % 7; // Handle wrap around (Sunday = 0)
+      const targetDay = page.days.find((d) => d.dayIndex === targetDayIndex);
+
+      let dayTotal = 0;
+      const dayCategories: Record<string, number> = {};
+      const dayEntries: Array<{
+        title: string;
+        amount: number;
+        category: string;
+      }> = [];
+
+      if (targetDay && targetDay.entries) {
+        for (const entry of targetDay.entries) {
+          dayTotal += entry.amount || 0;
+          const category = entry.category || "Uncategorized";
+          dayCategories[category] =
+            (dayCategories[category] || 0) + (entry.amount || 0);
+          dayEntries.push({
+            title: entry.title || "Untitled",
+            amount: entry.amount || 0,
+            category,
+          });
+        }
+      }
+
+      threeDaysData.push({
+        dayIndex: targetDayIndex,
+        dayName: dayNames[targetDayIndex],
+        totalSpent: dayTotal,
+        entries: dayEntries,
+        entriesByCategory: dayCategories,
+      });
+    }
+
+    // Calculate total spending from ONLY current day's entries
+    const currentDayData = threeDaysData[0];
+    const totalSpent = currentDayData.totalSpent;
+    const entriesByCategory = currentDayData.entriesByCategory;
+
+    // Get day name
+    const currentDayName = dayNames[dayIndex];
+
+    // Calculate available budget after fixed expenses
+    const fixedExpensesTotal = user.settings.fixedExpenses.reduce(
+      (sum, e) => sum + (e.amount || 0),
+      0
+    );
+    const availableMonthlyBudget =
+      user.settings.monthlyBudget - fixedExpensesTotal;
+    const dailyBudget = availableMonthlyBudget / 30;
 
     // Build prompt for AI
     const prompt = `
-Analyze this DAILY financial data for ${dayName} ONLY:
+Analyze this 3-DAY financial comparison for ${currentDayName}:
 
-Total Spent Today: ${user.settings.currency || "₹"}${totalSpent.toFixed(2)}
-Monthly Budget: ${
+**TODAY (${currentDayName}):**
+Total Spent: ${
+      user.settings.currency || "₹"
+    }${threeDaysData[0].totalSpent.toFixed(2)}
+Spending by Category:
+${Object.entries(threeDaysData[0].entriesByCategory)
+  .map(
+    ([cat, amount]) =>
+      `- ${cat}: ${user.settings.currency || "₹"}${amount.toFixed(2)}`
+  )
+  .join("\n")}
+Entries:
+${threeDaysData[0].entries
+  .map(
+    (e) =>
+      `- ${e.title}: ${user.settings.currency || "₹"}${e.amount.toFixed(2)} (${
+        e.category
+      })`
+  )
+  .join("\n")}
+
+**YESTERDAY (${threeDaysData[1].dayName}):**
+Total Spent: ${
+      user.settings.currency || "₹"
+    }${threeDaysData[1].totalSpent.toFixed(2)}
+Spending by Category:
+${
+  Object.entries(threeDaysData[1].entriesByCategory)
+    .map(
+      ([cat, amount]) =>
+        `- ${cat}: ${user.settings.currency || "₹"}${amount.toFixed(2)}`
+    )
+    .join("\n") || "No spending"
+}
+
+**2 DAYS AGO (${threeDaysData[2].dayName}):**
+Total Spent: ${
+      user.settings.currency || "₹"
+    }${threeDaysData[2].totalSpent.toFixed(2)}
+Spending by Category:
+${
+  Object.entries(threeDaysData[2].entriesByCategory)
+    .map(
+      ([cat, amount]) =>
+        `- ${cat}: ${user.settings.currency || "₹"}${amount.toFixed(2)}`
+    )
+    .join("\n") || "No spending"
+}
+
+**Budget Context:**
+Monthly Budget (Total): ${
       user.settings.currency || "₹"
     }${user.settings.monthlyBudget.toFixed(2)}
-Daily Budget Target: ${user.settings.currency || "₹"}${(
-      (user.settings.monthlyBudget -
-        user.settings.fixedExpenses.reduce((sum, e) => sum + e.amount, 0)) /
-      30
-    ).toFixed(2)}
+Fixed Monthly Expenses: ${
+      user.settings.currency || "₹"
+    }${fixedExpensesTotal.toFixed(2)}
+Available Monthly Budget (After Fixed Expenses): ${
+      user.settings.currency || "₹"
+    }${availableMonthlyBudget.toFixed(2)}
+Daily Budget Target (Available Budget ÷ 30): ${
+      user.settings.currency || "₹"
+    }${dailyBudget.toFixed(2)}
 
 Fixed Monthly Budgets/Expenses:
 ${
@@ -118,32 +210,15 @@ ${
     : "No fixed budgets set"
 }
 
-Spending by Category (Today Only):
-${Object.entries(entriesByCategory)
-  .map(
-    ([cat, amount]) =>
-      `- ${cat}: ${user.settings.currency || "₹"}${amount.toFixed(2)}`
-  )
-  .join("\n")}
-
-All Entries for ${dayName}:
-${allEntries
-  .map(
-    (e) =>
-      `- ${e.title}: ${user.settings.currency || "₹"}${e.amount.toFixed(2)} (${
-        e.category
-      })`
-  )
-  .join("\n")}
-
 Please provide:
-1. Analysis of TODAY'S spending only
-2. Category breakdown for THIS DAY
-3. Compare spending against fixed budgets (by category and tags)
-4. Warning if over daily budget or approaching any budget limits
-5. Recommendations for tomorrow based on budget descriptions
+1. **3-Day Comparison**: How today's spending compares to the last 2 days
+2. **Trends**: Are you spending more or less? Which categories changed?
+3. **Growth/Decline**: Percentage change in spending from yesterday and 2 days ago
+4. **Category Analysis**: Which categories increased/decreased across the 3 days
+5. **Budget Status**: Is today within daily budget? How does it compare to previous days?
+6. **Recommendations**: Based on the 3-day pattern, what should you do tomorrow?
 
-DO NOT include weekly totals or data from other days.
+Focus on trends, patterns, and actionable insights from the 3-day comparison.
 `;
 
     try {
@@ -169,6 +244,14 @@ DO NOT include weekly totals or data from other days.
       console.error("AI generation error:", aiError);
 
       // Return basic summary without AI if generation fails
+      const fixedExpensesTotal = user.settings.fixedExpenses.reduce(
+        (sum, e) => sum + (e.amount || 0),
+        0
+      );
+      const availableMonthlyBudget =
+        user.settings.monthlyBudget - fixedExpensesTotal;
+      const dailyBudget = availableMonthlyBudget / 30;
+
       return NextResponse.json({
         userId: user._id,
         date: dateStr,
@@ -176,15 +259,27 @@ DO NOT include weekly totals or data from other days.
         summary: `You spent ${
           user.settings.currency || "₹"
         }${totalSpent.toFixed(2)} today. ${
-          totalSpent > user.settings.monthlyBudget / 30
-            ? "⚠️ This is above your daily average budget!"
+          totalSpent > dailyBudget
+            ? "⚠️ This is above your daily available budget!"
             : "You're within your daily budget."
         }`,
         totalSpent,
         insights: [
-          `Total spending: ${user.settings.currency || "₹"}${totalSpent.toFixed(
-            2
-          )}`,
+          `Total spending today: ${
+            user.settings.currency || "₹"
+          }${totalSpent.toFixed(2)}`,
+          `Monthly budget: ${
+            user.settings.currency || "₹"
+          }${user.settings.monthlyBudget.toFixed(2)}`,
+          `Fixed expenses: ${
+            user.settings.currency || "₹"
+          }${fixedExpensesTotal.toFixed(2)}`,
+          `Available budget: ${
+            user.settings.currency || "₹"
+          }${availableMonthlyBudget.toFixed(2)}/month`,
+          `Daily budget target: ${
+            user.settings.currency || "₹"
+          }${dailyBudget.toFixed(2)}`,
           `Top category: ${
             Object.entries(entriesByCategory).sort(
               (a, b) => b[1] - a[1]
@@ -192,7 +287,11 @@ DO NOT include weekly totals or data from other days.
           }`,
         ],
         recommendations: [
-          "Set up your AI API key for detailed insights",
+          (aiError as Error)?.message?.includes("rate limit")
+            ? "⚠️ AI rate limit reached. Wait a few minutes or try a different provider"
+            : (aiError as Error)?.message?.includes("API key")
+            ? "Set up your AI API key in Settings > AI Keys for detailed insights"
+            : "AI service unavailable. Try again later or use a different provider",
           "Track your spending consistently for better analysis",
         ],
       });

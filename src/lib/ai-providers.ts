@@ -23,19 +23,21 @@ export async function generateAISummary(
   provider?: AIProvider
 ): Promise<AIResponse> {
   const selectedProvider =
-    provider || user.settings.preferredAIProvider || "openai";
+    provider || user.settings?.preferredAIProvider || "openai";
 
   // Get the appropriate API key
   const encryptedKey =
-    user.aiKeys[selectedProvider as keyof typeof user.aiKeys];
+    user.aiKeys?.[selectedProvider as keyof typeof user.aiKeys];
   if (!encryptedKey) {
-    throw new Error(`No API key found for provider: ${selectedProvider}`);
+    throw new Error(
+      `No API key found for provider: ${selectedProvider}. Please add your API key in Settings > AI Keys.`
+    );
   }
 
   const apiKey = decrypt(encryptedKey);
-  if (!apiKey) {
+  if (!apiKey || apiKey.trim() === "") {
     throw new Error(
-      `Failed to decrypt API key for provider: ${selectedProvider}`
+      `Failed to decrypt API key for provider: ${selectedProvider}. Please re-enter your API key in Settings.`
     );
   }
 
@@ -94,21 +96,54 @@ async function generateWithGoogle(
   systemPrompt: string,
   userPrompt: string
 ): Promise<AIResponse> {
-  const genAI = new GoogleGenerativeAI(apiKey);
-  // Use a valid v1beta model name supported for generateContent
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
+  try {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    // Use a valid v1beta model name supported for generateContent
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
 
-  const result = await model.generateContent(
-    `${systemPrompt}\n\n${userPrompt}`
-  );
-  const response = result.response;
-  const text = response.text();
+    const result = await model.generateContent(
+      `${systemPrompt}\n\n${userPrompt}`
+    );
+    const response = result.response;
+    const text = response.text();
 
-  // Extract JSON from response
-  const jsonMatch = text.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error("No JSON response from Google AI");
+    // Extract JSON from response
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      console.warn(
+        "Google AI response did not contain valid JSON, using fallback"
+      );
+      // Return a fallback response if JSON parsing fails
+      return {
+        summary: text.slice(0, 500) || "Unable to generate summary",
+        insights: [
+          "Review your spending patterns",
+          "Track expenses consistently",
+        ],
+        recommendations: ["Set realistic budgets", "Monitor daily spending"],
+      };
+    }
 
-  return JSON.parse(jsonMatch[0]);
+    return JSON.parse(jsonMatch[0]);
+  } catch (error: any) {
+    console.error("Google AI Error:", error?.message || error);
+
+    // Check for rate limit error
+    if (
+      error?.message?.includes("429") ||
+      error?.message?.includes("Too Many Requests")
+    ) {
+      throw new Error(
+        `Google AI rate limit exceeded. Please wait a few minutes and try again, or switch to a different AI provider in Settings.`
+      );
+    }
+
+    throw new Error(
+      `Google AI failed: ${
+        error?.message || "Unknown error"
+      }. Check your API key.`
+    );
+  }
 }
 
 async function generateWithAnthropic(
